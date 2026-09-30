@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://glauco.local/import-schema-v1",
+  "title": "Glauco trip file v1",
+  "type": "object",
+  "required": [
+    "format",
+    "version",
+    "trips"
+  ],
+  "properties": {
+    "format": {
+      "const": "glauco-trip-file"
+    },
+    "version": {
+      "const": 1
+    },
+    "trips": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 30,
+      "items": {
+        "$ref": "#/$defs/trip"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,99}$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://",
+      "maxLength": 2000
+    },
+    "optionalUrl": {
+      "anyOf": [
+        {
+          "const": ""
+        },
+        {
+          "$ref": "#/$defs/url"
+        }
+      ]
+    },
+    "photo": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "$ref": "#/$defs/url"
+        },
+        "thumbnailUrl": {
+          "$ref": "#/$defs/url"
+        },
+        "caption": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "creator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "licenseUrl": {
+          "$ref": "#/$defs/optionalUrl"
+        },
+        "sourceUrl": {
+          "$ref": "#/$defs/url"
+        }
+      },
+      "required": [
+        "url",
+        "thumbnailUrl",
+        "caption",
+        "creator",
+        "license",
+        "licenseUrl",
+        "sourceUrl"
+      ],
+      "additionalProperties": false
+    },
+    "fact": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 350
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "section": {
+      "type": "object",
+      "properties": {
+        "heading": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "paragraphs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
+          }
+        }
+      },
+      "required": [
+        "heading",
+        "paragraphs"
+      ],
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "url": {
+          "$ref": "#/$defs/url"
+        }
+      },
+      "required": [
+        "title",
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "attraction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "location": {
+          "type": "string",
+          "maxLength": 250
+        },
+        "visitTime": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "summary": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "facts": {
+          "type": "array",
+          "maxItems": 15,
+          "minItems": 0,
+          "items": {
+            "$ref": "#/$defs/fact"
+          }
+        },
+        "sections": {
+          "type": "array",
+          "maxItems": 15,
+          "minItems": 0,
+          "items": {
+            "$ref": "#/$defs/section"
+          }
+        },
+        "wikipediaUrl": {
+          "$ref": "#/$defs/optionalUrl"
+        },
+        "sources": {
+          "type": "array",
+          "maxItems": 15,
+          "minItems": 0,
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        },
+        "researchedAt": {
+          "$ref": "#/$defs/date"
+        },
+        "photos": {
+          "type": "array",
+          "maxItems": 12,
+          "minItems": 0,
+          "items": {
+            "$ref": "#/$defs/photo"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "location",
+        "visitTime",
+        "summary",
+        "facts",
+        "sections",
+        "wikipediaUrl",
+        "sources",
+        "researchedAt",
+        "photos"
+      ],
+      "additionalProperties": false
+    },
+    "day": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "date": {
+          "$ref": "#/$defs/date"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "attractions": {
+          "type": "array",
+          "maxItems": 100,
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/attraction"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "title",
+        "attractions"
+      ],
+      "additionalProperties": false
+    },
+    "trip": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2200
+        },
+        "startDate": {
+          "$ref": "#/$defs/date"
+        },
+        "endDate": {
+          "$ref": "#/$defs/date"
+        },
+        "coverUrl": {
+          "$ref": "#/$defs/optionalUrl"
+        },
+        "days": {
+          "type": "array",
+          "maxItems": 120,
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/day"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "year",
+        "startDate",
+        "endDate",
+        "coverUrl",
+        "days"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
