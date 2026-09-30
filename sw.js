@@ -1,4 +1,4 @@
-const VERSION='1.0.1',SHELL=`glauco-shell-${VERSION}`;
+const VERSION='1.0.2',SHELL=`glauco-shell-${VERSION}`;
 const FILES=['./','index.html','styles.css','app.js','config.js','model.js','storage.js','firebase.js','offline.js','manifest.webmanifest','app-icon.png','app-icon-maskable.png','fonts/figtree-400.ttf','fonts/figtree-500.ttf','vendor/firebase/12.18.0/firebase-app.js','vendor/firebase/12.18.0/firebase-auth.js','vendor/firebase/12.18.0/firebase-firestore.js'];
 self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(SHELL);for(const file of FILES){const url=new URL(file,self.registration.scope);const response=await fetch(url,{cache:'reload'});if(!response.ok)throw new Error(`Could not cache ${file}`);await cache.put(url,response);}if(!self.registration.active)await self.skipWaiting();})()));
 self.addEventListener('message',event=>{if(event.data?.type==='ACTIVATE')self.skipWaiting();});
