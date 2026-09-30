@@ -8,9 +8,8 @@ export const config = Object.freeze({
     messagingSenderId: '529982898488',
     appId: '1:529982898488:web:b0ecf0c04b37d41840c1cd',
   },
-  // Bootstrap: Google sign-in creates user records, but these IDs grant nobody trip access.
-  // Replace them with the two UIDs from this project's Authentication → Users.
-  ownerUids: ['pending-owner-1', 'pending-owner-2'],
+  // First member enabled. The second slot stays disabled pending their UID from this project's Authentication → Users.
+  ownerUids: ['4ct4jQf9cPhbzqiasFT56Mav7Ds1', 'pending-owner-2'],
   // Wikimedia images are supported by default. Keep this list and the index.html CSP in agreement.
   imageHosts: ['upload.wikimedia.org', 'thumb.wikimedia.org', 'res.cloudinary.com'],
 });
