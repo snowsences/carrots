@@ -51,3 +51,16 @@
 
 
 .nav-icon{fill:currentColor;stroke:none}.nav-icon .icon-selected{display:none}.nav-tab.active .nav-icon .icon-outline{display:none}.nav-tab.active .nav-icon .icon-selected{display:inline}
+
+/* Trip dropdown: custom arrow with 8px of space to its right. */
+.trip-selector{position:relative}
+.trip-selector select{appearance:none;-webkit-appearance:none;padding-right:32px}
+.trip-selector::after{content:"";position:absolute;right:8px;top:50%;width:16px;height:16px;margin-top:-8px;background:var(--ink);pointer-events:none;-webkit-mask:url(chevron.svg) center/contain no-repeat;mask:url(chevron.svg) center/contain no-repeat}
+@media(max-width:680px){
+ /* Icon-only tab bar. Labels stay available to screen readers. */
+ :root{--tabbar-height:59px}
+ .main-nav{padding:6px 16px calc(6px + env(safe-area-inset-bottom))}
+ .nav-tab{min-height:46px;padding:0 8px;justify-content:center}
+ .nav-tab span{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+ .nav-tab .nav-icon{width:28px;height:28px}
+}

@@ -15,3 +15,95 @@
  .img-in{animation:img-in .4s ease-out}
  @keyframes img-in{from{opacity:0}}
 }
+
+/* ---- tab bar ---- */
+.main-nav{position:relative}
+.nav-tab{position:relative;z-index:1}
+.nav-pill{position:absolute;left:0;top:0;z-index:0;border-radius:10px;background:color-mix(in srgb,var(--ink) 14%,transparent);pointer-events:none;view-transition-name:pill}
+.main-nav.has-pill .nav-tab.active{background:transparent}
+@media(max-width:680px){.main-nav{position:fixed}}
+@media(prefers-reduced-motion:no-preference){
+ ::view-transition-group(pill){animation-duration:.3s;animation-timing-function:cubic-bezier(.2,0,0,1)}
+ .nav-tab.active .nav-icon{animation:tab-pop .38s cubic-bezier(.3,1.6,.5,1)}
+ @keyframes tab-pop{from{transform:scale(.8)}}
+ .today-shortcut:not(.hidden){animation:rise-in .35s cubic-bezier(.2,0,0,1)}
+ @keyframes rise-in{from{opacity:0;transform:translateY(20px)}}
+}
+@media(max-width:680px) and (prefers-reduced-motion:no-preference){
+ .main-nav,.today-shortcut{transition:transform .25s cubic-bezier(.2,0,0,1)}
+ .chrome-hidden .main-nav{transform:translateY(100%)}
+ .chrome-hidden .today-shortcut{transform:translateY(var(--tabbar-height))}
+}
+
+/* ---- staggered list entry (after navigation only) ---- */
+@media(prefers-reduced-motion:no-preference){
+ html[data-enter] :is(.days,.attraction-grid,.trip-grid,.settings-grid)>*{animation:enter-up .42s cubic-bezier(.2,0,0,1) backwards;animation-delay:320ms}
+ html[data-enter] :is(.days,.attraction-grid,.trip-grid,.settings-grid)>:nth-child(1){animation-delay:0ms}
+ html[data-enter] :is(.days,.attraction-grid,.trip-grid,.settings-grid)>:nth-child(2){animation-delay:40ms}
+ html[data-enter] :is(.days,.attraction-grid,.trip-grid,.settings-grid)>:nth-child(3){animation-delay:80ms}
+ html[data-enter] :is(.days,.attraction-grid,.trip-grid,.settings-grid)>:nth-child(4){animation-delay:120ms}
+ html[data-enter] :is(.days,.attraction-grid,.trip-grid,.settings-grid)>:nth-child(5){animation-delay:160ms}
+ html[data-enter] :is(.days,.attraction-grid,.trip-grid,.settings-grid)>:nth-child(6){animation-delay:200ms}
+ html[data-enter] :is(.days,.attraction-grid,.trip-grid,.settings-grid)>:nth-child(7){animation-delay:240ms}
+ html[data-enter] :is(.days,.attraction-grid,.trip-grid,.settings-grid)>:nth-child(8){animation-delay:280ms}
+ @keyframes enter-up{from{opacity:0;transform:translateY(16px)}}
+}
+
+/* ---- dialogs: sheet on phones, scale-in on wide screens, with a matching exit ---- */
+@media(max-width:680px){
+ dialog:not(.photo-dialog){margin:auto 0 0;width:100%;max-width:none;max-height:calc(100dvh - 40px);border-radius:16px 16px 0 0;border-bottom:0}
+ dialog:not(.photo-dialog) .dialog-inner{padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:no-preference){@supports(transition-behavior:allow-discrete){
+ dialog:not(.photo-dialog){opacity:0;transform:scale(.96);transition:opacity .2s ease,transform .28s cubic-bezier(.2,0,0,1),overlay .28s allow-discrete,display .28s allow-discrete;animation:none}
+ dialog[open]:not(.photo-dialog){opacity:1;transform:none;animation:none}
+ @starting-style{dialog[open]:not(.photo-dialog){opacity:0;transform:scale(.96)}}
+ .glossary-dialog{transform-origin:var(--ox,50%) var(--oy,50%)}
+ dialog:not(.photo-dialog)::backdrop{opacity:0;transition:opacity .25s ease,overlay .25s allow-discrete,display .25s allow-discrete}
+ dialog[open]:not(.photo-dialog)::backdrop{opacity:1}
+ @starting-style{dialog[open]:not(.photo-dialog)::backdrop{opacity:0}}
+ @media(max-width:680px){
+  dialog:not(.photo-dialog){transform:translateY(100%);opacity:1}
+  dialog[open]:not(.photo-dialog){transform:none}
+  @starting-style{dialog[open]:not(.photo-dialog){transform:translateY(100%);opacity:1}}
+ }
+}}
+
+/* ---- scroll-linked touches ---- */
+.mini-title{position:fixed;z-index:35;top:0;left:0;right:0;height:calc(44px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 16px 0;border:0;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);color:var(--ink);font:500 17px/44px Figtree,'Noto Sans Thai','Noto Sans Khmer',sans-serif;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);transform:translateY(-100%);visibility:hidden}
+.mini-title.show{transform:none;visibility:visible}
+@media(prefers-reduced-motion:no-preference){
+ .mini-title{transition:transform .25s cubic-bezier(.2,0,0,1),visibility 0s .25s}
+ .mini-title.show{transition:transform .25s cubic-bezier(.2,0,0,1)}
+}
+@supports(animation-timeline:scroll()){@media(prefers-reduced-motion:no-preference){
+ body.attraction-view::before{content:"";position:fixed;z-index:60;top:env(safe-area-inset-top,0px);left:0;right:0;height:3px;background:var(--link);transform-origin:0 50%;animation:read-progress linear both;animation-timeline:scroll(root block)}
+ @keyframes read-progress{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+ .article .photo-gallery{transform-origin:50% 100%;animation:hero-recede linear both;animation-timeline:scroll(root block);animation-range:0px 360px}
+ @keyframes hero-recede{to{transform:scale(.94);opacity:.55}}
+}}
+
+/* ---- toasts, progress and loading states ---- */
+.toast.leaving{pointer-events:none}
+@media(prefers-reduced-motion:no-preference){
+ .toast:not(.hidden){animation:toast-in .3s cubic-bezier(.2,0,0,1)}
+ .toast.leaving{animation:toast-out .22s ease-in forwards}
+ @keyframes toast-in{from{opacity:0;transform:translate(-50%,14px)}}
+ @keyframes toast-out{to{opacity:0;transform:translate(-50%,10px)}}
+ .swap{animation:text-swap .35s ease}
+ @keyframes text-swap{from{opacity:0}}
+ .status .check{display:inline-block;animation:check-pop .5s cubic-bezier(.3,1.6,.5,1)}
+ @keyframes check-pop{from{opacity:0;transform:scale(.3) rotate(-30deg)}}
+ .sk{background:linear-gradient(90deg,var(--raised) 25%,var(--soft) 50%,var(--raised) 75%);background-size:200% 100%;animation:shimmer 1.4s linear infinite}
+ @keyframes shimmer{to{background-position:-200% 0}}
+}
+.progress-wrap progress{appearance:none;-webkit-appearance:none;border:0;border-radius:4px;overflow:hidden;background:var(--raised)}
+.progress-wrap progress::-webkit-progress-bar{background:var(--raised);border-radius:4px}
+.progress-wrap progress::-webkit-progress-value{background:var(--link);border-radius:4px;transition:width .35s ease}
+.progress-wrap progress::-moz-progress-bar{background:var(--link);border-radius:4px}
+.skeleton{display:grid;gap:16px}
+.sk{background-color:var(--raised);border-radius:8px}
+.sk-search{height:52px}
+.sk-card{display:grid;gap:12px;padding:20px;background:var(--surface);border-radius:8px;box-shadow:var(--shadow)}
+.sk-line{height:20px;width:70%}.sk-line.short{height:14px;width:40%}
+.sk-row{display:flex;gap:10px}.sk-thumb{width:112px;height:82px;flex:none}

@@ -6,8 +6,19 @@ const inView = el => { const b = el.getBoundingClientRect(); return b.width > 0 
 const linkImage = (main, key) => { const a = [...main.querySelectorAll('a[href]')].find(a => a.getAttribute('href') === key); const img = a?.querySelector('img'); return img && inView(img) ? img : null; };
 const articleImage = main => { const img = main.querySelector('.article .photo-tile img'); return img && inView(img) ? img : null; };
 
+// Lists fade up in sequence after a navigation. The flag stays on briefly so background refreshes do not replay it.
+let enterTimer;
+function markEnter() {
+  if (reduce.matches) return;
+  document.documentElement.dataset.enter = '';
+  clearTimeout(enterTimer);
+  enterTimer = setTimeout(() => document.documentElement.removeAttribute('data-enter'), 900);
+}
+
 // Runs `update` (which renders the new screen) inside a view transition. `fallback` is the plain, instant path.
 export function transition(main, oldKey, newKey, update, fallback) {
+  markEnter();
+  showChrome();
   if (typeof document.startViewTransition !== 'function' || reduce.matches) return fallback();
   const from = parse(oldKey), to = parse(newKey), root = document.documentElement;
   let direction = 'fade';
@@ -91,4 +102,51 @@ export function initPhotoDismiss(dialog) {
   stage.addEventListener('touchend', finish, { passive: true });
   stage.addEventListener('touchcancel', () => { g = null; set(0); }, { passive: true });
   dialog.addEventListener('close', () => set(0));
+}
+
+// ---- tab bar: sliding highlight and hide-on-scroll ----
+const phone = matchMedia('(max-width: 680px)');
+let pill;
+export function syncPill() {
+  const nav = document.querySelector('.main-nav'), tab = nav?.querySelector('.nav-tab.active');
+  if (!nav || !tab || !tab.offsetWidth) return;
+  if (!pill) { pill = document.createElement('span'); pill.className = 'nav-pill'; pill.setAttribute('aria-hidden', 'true'); nav.prepend(pill); nav.classList.add('has-pill'); }
+  pill.style.cssText = `width:${tab.offsetWidth}px;height:${tab.offsetHeight}px;transform:translate(${tab.offsetLeft}px,${tab.offsetTop}px)`;
+}
+function showChrome() { document.body.classList.remove('chrome-hidden'); }
+export function initTabBar() {
+  addEventListener('resize', syncPill);
+  document.fonts?.ready.then(syncPill);
+  let last = scrollY, queued = false;
+  addEventListener('scroll', () => {
+    if (!phone.matches || queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      const y = Math.max(0, scrollY), dy = y - last, atEnd = innerHeight + y >= document.documentElement.scrollHeight - 8;
+      if (y < 64 || atEnd || dy < -6) showChrome(); else if (dy > 8) document.body.classList.add('chrome-hidden');
+      if (Math.abs(dy) >= 6) last = y;
+    });
+  }, { passive: true });
+}
+
+// ---- compact title that appears once the page title scrolls away ----
+export function initMiniTitle(main) {
+  const bar = document.createElement('button');
+  bar.type = 'button'; bar.className = 'mini-title'; bar.setAttribute('aria-hidden', 'true'); bar.tabIndex = -1;
+  bar.addEventListener('click', () => scrollTo({ top: 0, behavior: reduce.matches ? 'auto' : 'smooth' }));
+  document.body.append(bar);
+  const io = new IntersectionObserver(([entry]) => bar.classList.toggle('show', !entry.isIntersecting && entry.boundingClientRect.top < 0), { rootMargin: '-8px 0px 0px 0px' });
+  const watch = () => { io.disconnect(); const h1 = main.querySelector('.article h1'); bar.classList.remove('show'); if (h1) { bar.textContent = h1.textContent; io.observe(h1); } };
+  new MutationObserver(watch).observe(main, { childList: true });
+  watch();
+}
+
+// Open the glossary dialog from the word that was tapped (wide screens).
+export function initGlossaryOrigin(dialog) {
+  document.addEventListener('pointerdown', e => {
+    if (!e.target.closest('.glossary-word')) return;
+    dialog.style.setProperty('--ox', `calc(50% + ${e.clientX - innerWidth / 2}px)`);
+    dialog.style.setProperty('--oy', `calc(50% + ${e.clientY - innerHeight / 2}px)`);
+  }, true);
 }

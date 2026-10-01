@@ -109,8 +109,9 @@
  :root[data-style=explorer][data-theme] .app{margin:0 8px 8px}
  /* bottom bar: leather strap with brass tabs */
  :root[data-style=explorer][data-theme] .main-nav{background:radial-gradient(120% 140% at 50% 0,var(--leather-hi),var(--leather));border-top:2px solid #170d06;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
- :root[data-style=explorer][data-theme] .nav-tab{min-height:56px;padding:6px 8px;font-size:12px}
- :root[data-style=explorer][data-theme] .nav-tab svg{width:24px;height:24px}
+ :root[data-style=explorer]{--tabbar-height:64px}
+ :root[data-style=explorer][data-theme] .nav-tab{min-height:46px;padding:0 8px}
+ :root[data-style=explorer][data-theme] .nav-tab svg{width:26px;height:26px}
  :root[data-style=explorer][data-theme] .page-heading h1,:root[data-style=explorer][data-theme] .article h1{font-size:32px}
  :root[data-style=explorer][data-theme] .guide-text{font-size:19px}
  :root[data-style=explorer][data-theme] .toast{bottom:calc(var(--tabbar-height) + 16px)}
@@ -119,3 +120,9 @@
 
 /* Classic tints the page from the cover photo on attraction screens; Explorer keeps its parchment. */
 :root[data-style=explorer][data-theme] body.attraction-view{--bg:var(--paper)}
+
+/* Motion helpers in the Explorer look */
+:root[data-style=explorer][data-theme] .nav-pill{display:none}
+:root[data-style=explorer][data-theme] .mini-title{background:var(--leather);color:#f0e2b8;border-bottom:2px solid #170d06;font-family:var(--display)}
+:root[data-style=explorer][data-theme] body::before{background:var(--wax)}
+:root[data-style=explorer][data-theme] .skeleton .sk{background-color:rgba(60,30,6,.14)}
