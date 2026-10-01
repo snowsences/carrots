@@ -61,6 +61,59 @@ export const guides=[{
   ['Grand Palace: travel and dress code','https://www.royalgrandpalace.th/en/visit/practical-information'],
   ['ThaiPod101: tipping customs','https://www.thaipod101.com/blog/2026/04/16/how-tipping-works-in-thailand/']
  ]
+},{
+ id:'peru',name:'Peru',language:'Spanish',lang:'es',
+ matches:/\b(peru|perú|cusco|cuzco|sacred valley|valle sagrado|tambopata|puerto maldonado|machu\s?picchu|lima)\b/i,
+ intro:'Practical local context for Cusco and the Sacred Valley, plus your time in the Tambopata rainforest.',
+ sections:[
+  {heading:'Getting around',paragraphs:[
+   'Uber operates in Cusco: check the pickup pin and fare estimate before requesting a ride. Availability varies. With a street taxi, agree on the total fare before getting in. For several Sacred Valley stops, our suggestion is to arrange a driver ahead of time and confirm the route, waiting time and return journey.',
+   'Around Puerto Maldonado, a rainforest lodge transfer can involve both road travel and a boat. Confirm your airport pickup and transfer schedule with the lodge rather than treating it as an ordinary taxi trip. Save its contact details and meeting instructions offline before flying.'
+  ]},
+  {heading:'Meals and tipping',paragraphs:[
+   'Tipping is appreciated but not compulsory. At a casual restaurant, rounding up or leaving a small cash tip is a friendly gesture. At a sit-down restaurant, check whether a service charge is already included before deciding on an extra tip. Taxi drivers generally do not expect a gratuity.',
+   'Guided treks and rainforest lodges have their own tipping arrangements. Ask your operator whether there is a shared staff tip box, whether guides are tipped separately and what currency it prefers. Carry small notes so you can thank people individually when appropriate.'
+  ]},
+  {heading:'Greetings, photographs and sacred places',paragraphs:[
+   'Our suggestion: begin a conversation with buenos días or buenas tardes before asking a question or a price. Ask permission before photographing people. If someone offers a posed photograph for payment, agree on the amount first. In a community visit, follow your host’s lead and ask before entering homes or handling objects.',
+   'Keep voices low in churches and follow the posted dress and photography guidance. At archaeological sites, stay on the visitor route and avoid climbing or leaning on historic walls. These places are part of living communities as well as monuments.'
+  ]},
+  {heading:'Money and market habits',paragraphs:[
+   'The currency is the Peruvian sol, usually written S/. Our suggestion is to keep small soles notes and coins for markets, snacks and short rides, and confirm the currency when a price is quoted. Do not depend on a large note being easy to change.',
+   'Ask the price before ordering or buying. Treat bargaining as a conversation only where the seller welcomes it, rather than assuming every price is negotiable. For textiles, our suggestion is to ask who made the piece and what fibres it uses; that often tells you more than a souvenir label.'
+  ]},
+  {heading:'Taking your time in the Andes',paragraphs:[
+   'Cusco is high enough for altitude to affect visitors arriving from lower elevations. Allow time to acclimatize and avoid alcohol and strenuous exercise during the first 48 hours at altitude. A gentle first day is a useful start, but it does not guarantee that you will avoid altitude illness.',
+   'Our practical suggestion: leave room between activities rather than filling every spare hour. Carry layers for changes between sunshine, shade and evening, and save longer attraction readings for a seated break. Ask your accommodation or guide about the next day’s walking and elevation before committing to extra stops.'
+  ]},
+  {heading:'Rainforest lodge habits',paragraphs:[
+   'Follow your guide’s instructions on trails and keep wildlife encounters quiet. Do not call, clap or imitate animal sounds to draw an animal closer. Let the guide set the viewing distance, and leave animals and plants undisturbed.',
+   'Ask your lodge about charging facilities, luggage limits and connectivity before arrival, as arrangements vary. Our suggestion: download the trip guide beforehand, pack a headlamp where you can reach it, and check the meeting time for the next excursion before leaving the common area.'
+  ]}
+ ],
+ phraseNote:'Spanish is a useful starting point for everyday travel. Quechua is also spoken in many Andean communities, with regional varieties. These sound spellings are approximate: capital letters mark the stressed syllable, and Spanish h is silent. You can show the Spanish text instead.',
+ phrases:[
+  ['Good morning','Buenos días','BWEH-nos DEE-as'],
+  ['Good afternoon','Buenas tardes','BWEH-nas TAR-des'],
+  ['Thank you','Gracias','GRAH-syahs'],
+  ['Please','Por favor','por fah-VOR'],
+  ['Excuse me / sorry','Disculpe','dees-KOOL-peh'],
+  ['How much does it cost?','¿Cuánto cuesta?','KWAN-toh KWES-tah'],
+  ['The bill, please','La cuenta, por favor','lah KWEN-tah, por fah-VOR'],
+  ['Without sugar','Sin azúcar','seen ah-SOO-kar'],
+  ['Where is the bathroom?','¿Dónde está el baño?','DON-deh es-TAH el BAH-nyoh'],
+  ['More slowly, please','Más despacio, por favor','mahs des-PAH-syoh, por fah-VOR'],
+  ['I don’t understand','No entiendo','noh en-TYEN-doh'],
+  ['Do you speak English?','¿Habla inglés?','AH-blah een-GLES']
+ ],
+ sources:[
+  ['Peru’s official tourism portal: languages','https://www.peru.travel/yourperfectperu/about-peru/language'],
+  ['Peru’s official tourism portal: travel tips','https://www.peru.travel/yourperfectperu/about-peru/travel-tips'],
+  ['Uber: getting around Cusco','https://www.uber.com/global/en/r/cities/cusco-cusco-pe/'],
+  ['Intrepid: Peru travel and tipping advice','https://www.intrepidtravel.com/en/peru'],
+  ['Rainforest Expeditions: transfers, lodge etiquette and practical information','https://www.rainforestexpeditions.com/pre-departure-information/'],
+  ['CDC: travel to high altitudes','https://wwwnc.cdc.gov/travel/page/travel-to-high-altitudes']
+ ]
 }];
 export function guidesForTrip(trip) {
  // Detect destinations from the title and locations, not narrative mentions of other countries.

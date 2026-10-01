@@ -16,3 +16,11 @@ test('today matches an actual itinerary day, using local calendar fields',()=>{a
 test('country guides match destinations and avoid unrelated narrative mentions',()=>{const f=fixture();assert.deepEqual(guidesForTrip(f).map(g=>g.id),['cambodia','thailand']);const other={name:'Japan',days:[{attractions:[{location:'Kyoto',summary:['Unlike Angkor Wat in Cambodia.']}]}]};assert.deepEqual(guidesForTrip(other),[]);});
 
 test('day numbering follows the guide order without changing source titles',()=>{const trip=fixture(),titles=trip.days.map(d=>d.title);assert.equal(dayNumber(trip,'one'),1);assert.equal(dayNumber(trip,'two'),2);assert.equal(dayTitle(trip,trip.days[1]),'Day 2: Second day');assert.deepEqual(trip.days.map(d=>d.title),titles);});
+
+test('Peru customs match trip names and destinations, not narrative references',()=>{
+ assert.deepEqual(guidesForTrip({name:'Peru 2027',days:[]}).map(g=>g.id),['peru']);
+ for(const location of ['Cusco','Sacred Valley','Puerto Maldonado','Tambopata']){
+  assert.deepEqual(guidesForTrip({name:'Holiday',days:[{attractions:[{location}]}]}).map(g=>g.id),['peru']);
+ }
+ assert.deepEqual(guidesForTrip({name:'Italy',days:[{attractions:[{location:'Rome',summary:['Compare this to Cusco in Peru.']}]}]}),[]);
+});
