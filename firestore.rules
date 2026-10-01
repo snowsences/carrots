@@ -4,7 +4,8 @@ service cloud.firestore {
     function isGlaucoMember() {
       return request.auth != null
         && request.auth.uid in [
-          '4ct4jQf9cPhbzqiasFT56Mav7Ds1'
+          '4ct4jQf9cPhbzqiasFT56Mav7Ds1',
+          '12JhGJFUeJf4rf61K6bCTO0WBAQ2'
         ];
     }
     match /glauco/shared/{document=**} {
