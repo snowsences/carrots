@@ -67,3 +67,28 @@
 
 /* Attraction details: lighter shadow and 70% fill on the content cards. */
 :root .article :is(.facts,.notice-checklist,.originality-section,.comparison){background:color-mix(in srgb,var(--surface) 70%,transparent);box-shadow:0px 2px 4px 0px rgba(0,0,0,0.35)}
+
+/* Trip timeline */
+.view-tabs{margin-bottom:20px}
+.era{margin:0 0 28px}.era-heading{font-size:18px;color:var(--muted);margin-bottom:6px}
+.timeline-ruler{margin:0 0 28px;padding:6px 8px 0}
+.ruler-track{position:relative;height:30px;margin:0 7px}
+.ruler-track::before{content:"";position:absolute;left:-7px;right:-7px;top:50%;border-top:2px solid var(--line)}
+.ruler-dot{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;padding:0;border-radius:50%;border:2px solid var(--muted);background:var(--bg)}
+.ruler-dot::after{content:"";position:absolute;inset:-12px}
+.ruler-dot.seen,.ruler-key.seen{background:var(--good);border-color:var(--good)}
+.ruler-dot.today,.ruler-key.today{background:var(--warning);border-color:var(--warning)}
+.ruler-ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:4px}
+.timeline-legend{display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;margin:12px 0 0}
+.ruler-key{display:inline-block;width:10px;height:10px;border-radius:50%;border:2px solid var(--muted);margin-left:10px}.ruler-key:first-child{margin-left:0}
+.history-event.seen::before{background:var(--good);border-color:var(--good)}.history-event.today::before{background:var(--warning);border-color:var(--warning)}
+.visit-chip{display:block;margin-top:4px;font-size:13px}.visit-chip.seen{color:var(--good)}.visit-chip.today{color:var(--warning)}.visit-chip.ahead{color:var(--muted)}
+a.history-site{text-decoration:none}a.history-site:hover{text-decoration:underline}
+
+/* Storage */
+.storage-summary p{margin:0 0 8px}
+.photo-details{margin-top:10px}.photo-details summary{cursor:pointer;font-size:15px;color:var(--muted)}
+.photo-details ul{list-style:none;margin:8px 0 0;padding:0}.photo-details li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px solid var(--line);font-size:15px}
+.photo-details li.some span:first-child,.photo-details li.none span:first-child{color:var(--warning)}
+.storage-actions{display:grid;justify-items:start;gap:8px;margin-top:8px;padding-top:16px;border-top:1px solid var(--line)}.storage-actions p{margin:0}
+.download-row{flex-wrap:wrap}.download-row>div:first-child{flex:1 1 240px}

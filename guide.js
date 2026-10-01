@@ -33,3 +33,24 @@ export function historyTimeline(trip, attractionId) {
   }
   return events.sort((a,b) => a.year-b.year || Number(b.current)-Number(a.current));
 }
+
+const ordinal = n => `${n}${[11,12,13].includes(n % 100) ? 'th' : ({1:'st',2:'nd',3:'rd'}[n % 10] || 'th')}`;
+export const yearLabel = year => year < 0 ? `${-year} BCE` : `${year} CE`;
+export const centuryLabel = year => year > 0 ? `${ordinal(Math.ceil(year/100))} century CE` : `${ordinal(Math.max(1,Math.ceil(-year/100)))} century BCE`;
+
+// Every milestone in the trip in chronological order, grouped by century. Visited state follows the trip's own dates.
+export function tripTimeline(trip, today) {
+  const events = [];
+  for (const day of trip.days) for (const attraction of day.attractions) for (const event of attraction.history || []) {
+    events.push({...event, attraction, day, status: day.date < today ? 'seen' : day.date === today ? 'today' : 'ahead'});
+  }
+  events.sort((a,b) => a.year - b.year || a.day.date.localeCompare(b.day.date));
+  events.forEach((event, index) => { event.index = index; });
+  const bands = [];
+  for (const event of events) {
+    const label = centuryLabel(event.year), last = bands.at(-1);
+    if (last?.label === label) last.events.push(event); else bands.push({label, events: [event]});
+  }
+  const min = events[0]?.year ?? 0, max = events.at(-1)?.year ?? 0;
+  return {events, bands, min, max};
+}

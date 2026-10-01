@@ -129,3 +129,7 @@
 
 /* Attraction details: lighter shadow and 70% fill on the content cards. */
 :root[data-style=explorer][data-theme] .article :is(.notice-checklist,.originality-section,.comparison){background:linear-gradient(rgba(244,231,193,.7),rgba(232,214,168,.7));box-shadow:0px 2px 4px 0px rgba(0,0,0,0.35)}
+
+/* Timeline status colours */
+:root[data-style=explorer][data-theme] .history-event.seen::before{background:var(--good);border-color:var(--good)}
+:root[data-style=explorer][data-theme] .history-event.today::before{background:var(--warning);border-color:var(--warning)}
