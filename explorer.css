@@ -1,0 +1,118 @@
+/* Explorer style: an optional field-journal look. Applies only when <html data-style="explorer">. Classic styling lives in styles.css. */
+@font-face{font-family:'IM Fell English';src:url('./fonts/imfell.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'IM Fell English';src:url('./fonts/imfell-italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Crimson Pro';src:url('./fonts/crimsonpro-400.ttf') format('truetype');font-weight:400;font-display:swap}
+@font-face{font-family:'Crimson Pro';src:url('./fonts/crimsonpro-600.ttf') format('truetype');font-weight:600;font-display:swap}
+@font-face{font-family:'Special Elite';src:url('./fonts/specialelite.ttf') format('truetype');font-weight:400;font-display:swap}
+
+/* Tokens. Parchment is the page, so --bg and --surface are paper tones; the desk and leather are set separately below. */
+:root[data-style=explorer]{color-scheme:light;
+ --desk:#241810;--leather:#3a2214;--leather-hi:#54301b;--brass:#b98a3c;--brass-hi:#e8c76f;--wax:#8c2a1c;
+ --paper:#e6d3a3;--paper-lo:#cdb27a;--card:#f2e4bd;
+ --bg:var(--paper);--surface:var(--card);--raised:#e9d7a8;--soft:#dcc791;--ink:#2c1c0f;--muted:#5b4328;--line:rgba(60,30,6,.38);
+ --accent:var(--brass);--accent-ink:#2c1c0f;--link:var(--wax);--focus:#7a4b00;--button-line:#5a3f12;--danger:#8c2a1c;--good:#2f6b3a;--warning:#7a4b00;
+ --shadow:1px 3px 5px rgba(40,20,4,.45);
+ --display:'IM Fell English','Iowan Old Style',Georgia,serif;--body:'Crimson Pro','Noto Sans Thai','Noto Sans Khmer','Iowan Old Style',Georgia,serif;--type:'Special Elite','Courier New',monospace;
+ --grain:url('textures/grain.svg');--stains:url('textures/stains.svg');--bevel:linear-gradient(#e9cd82,#b98a3c 55%,#8f6a28);
+}
+/* X raises specificity above the classic dark/light overrides in styles.css */
+:root[data-style=explorer][data-theme] body{background:var(--grain),repeating-linear-gradient(90deg,rgba(0,0,0,.2) 0 2px,transparent 2px 46px),var(--desk);color:var(--ink);font:400 19px/1.55 var(--body)}
+:root[data-style=explorer][data-theme] :is(h1,h2,h3){font-family:var(--display);font-weight:400;letter-spacing:0}
+:root[data-style=explorer][data-theme] strong,:root[data-style=explorer][data-theme] b{font-weight:600}
+:root[data-style=explorer][data-theme] :is(.eyebrow,.status,.connection,.day-count,.fact dt,.history-date,.history-site,.photo-tile span,.sources h2){font-family:var(--type);letter-spacing:.08em}
+:root[data-style=explorer][data-theme] .eyebrow{text-transform:uppercase;color:var(--muted)}
+
+/* ---- leather header and brass tabs ---- */
+:root[data-style=explorer][data-theme] .top-header{max-width:1080px;margin:14px auto 0;padding:14px 20px;background:radial-gradient(120% 140% at 50% 0,var(--leather-hi),var(--leather) 70%);border:2px solid #170d06;border-radius:10px 10px 0 0;box-shadow:inset 0 -3px 0 rgba(255,220,150,.12);position:relative}
+:root[data-style=explorer][data-theme] .top-header:before{content:"";position:absolute;inset:5px;border:1px dashed rgba(232,199,111,.45);border-radius:6px;pointer-events:none}
+:root[data-style=explorer][data-theme] .connection{color:#d9c493}
+:root[data-style=explorer][data-theme] .trip-selector select{background:var(--card);color:var(--ink);border:1px solid #5a3f12;font:400 19px var(--body);box-shadow:inset 0 0 8px rgba(110,64,16,.35)}
+:root[data-style=explorer][data-theme] .nav-tab{font-family:var(--type);text-transform:uppercase;letter-spacing:.08em;font-size:14px;color:#4a2f10;background:var(--bevel);border:1px solid #5a3f12;border-radius:5px;box-shadow:0 2px 0 #3a2509,0 3px 5px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.5)}
+:root[data-style=explorer][data-theme] .nav-tab:hover{background:var(--bevel);filter:brightness(1.07)}
+:root[data-style=explorer][data-theme] .nav-tab.active{background:linear-gradient(#8f6a28,#c99d4c);box-shadow:inset 0 2px 5px rgba(0,0,0,.6);transform:translateY(2px);color:#2c1c0f}
+
+/* ---- parchment page ---- */
+:root[data-style=explorer][data-theme] .app{max-width:1080px;margin:0 auto 40px;border-radius:0 0 7px 7px;color:var(--ink);background:var(--stains),var(--grain),radial-gradient(130% 90% at 50% 40%,var(--paper),var(--paper-lo));box-shadow:0 8px 24px rgba(0,0,0,.55),inset 0 0 40px rgba(110,64,16,.5),inset 0 0 3px rgba(60,30,6,.8);background-size:100% 100%,220px 220px,auto;background-repeat:no-repeat,repeat,no-repeat}
+:root[data-style=explorer][data-theme] .muted,:root[data-style=explorer][data-theme] .small,:root[data-style=explorer][data-theme] .panel p{color:var(--muted)}
+:root[data-style=explorer][data-theme] .page-heading h1,:root[data-style=explorer][data-theme] .article h1{font-size:38px;line-height:1.1}
+:root[data-style=explorer][data-theme] .article-location{font-style:italic;color:var(--muted);font-size:20px}
+:root[data-style=explorer][data-theme] .back-link{color:var(--wax);font-family:var(--type);font-size:14px;letter-spacing:.06em}
+
+/* ---- cards and panels become index cards ---- */
+:root[data-style=explorer][data-theme] :is(.trip-card,.panel,.day-card,.empty,.result,.offline-note,.progress-wrap,.notice-checklist,.originality-section,.conflict-row,.today-shortcut){background:linear-gradient(#f4e7c1,#e8d6a8);border:1px solid rgba(80,45,10,.55);border-radius:2px 4px 3px 5px;box-shadow:var(--shadow)}
+:root[data-style=explorer][data-theme] .empty{border-style:dashed}
+:root[data-style=explorer][data-theme] :is(.day-card,.trip-card,.attraction-card):hover{border-color:rgba(80,45,10,.85)}
+:root[data-style=explorer][data-theme] .day-card:nth-child(odd){transform:rotate(.25deg)}
+:root[data-style=explorer][data-theme] .trip-footer{border-top-color:var(--line)}
+:root[data-style=explorer][data-theme] .thumbnail{border-radius:0;border:5px solid #f4ead0;border-bottom-width:9px;box-shadow:0 2px 4px rgba(30,14,2,.5)}
+:root[data-style=explorer][data-theme] .thumbnail img{filter:sepia(.3)}
+:root[data-style=explorer][data-theme] .trip-cover{filter:sepia(.3)}
+
+/* ---- photo cards: mounted prints ---- */
+:root[data-style=explorer][data-theme] .attraction-card{background:#f4ead0;border:0;border-radius:1px;padding:9px 9px 14px;box-shadow:0 4px 9px rgba(30,14,2,.55)}
+:root[data-style=explorer][data-theme] .attraction-card:nth-child(odd){transform:rotate(-.6deg)}
+:root[data-style=explorer][data-theme] .attraction-card:nth-child(even){transform:rotate(.5deg)}
+:root[data-style=explorer][data-theme] .attraction-link{border-radius:0}
+:root[data-style=explorer][data-theme] .attraction-link img{filter:sepia(.35) contrast(1.05)}
+:root[data-style=explorer][data-theme] .attraction-body h2{font-family:var(--display)}
+:root[data-style=explorer][data-theme] .attraction-body p{font-family:var(--type);font-size:14px;letter-spacing:.04em}
+:root[data-style=explorer][data-theme] .photo-gallery{padding:6px 4px 12px}
+:root[data-style=explorer][data-theme] .photo-tile{background:#f4ead0;border-radius:1px;height:auto;padding:9px 9px 0;box-shadow:0 4px 9px rgba(30,14,2,.55)}
+:root[data-style=explorer][data-theme] .photo-tile:nth-child(odd){transform:rotate(-.7deg)}
+:root[data-style=explorer][data-theme] .photo-tile img{filter:sepia(.3) contrast(1.05);border-radius:0}
+:root[data-style=explorer][data-theme] .photo-tile span{color:var(--muted);font-size:13px;padding:10px 4px 12px}
+:root[data-style=explorer][data-theme] .placeholder{background:var(--raised);color:var(--muted)}
+
+/* ---- facts as a ledger ---- */
+:root[data-style=explorer][data-theme] .facts{background:transparent;border:0;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink);border-radius:0;box-shadow:none;padding:4px 0}
+:root[data-style=explorer][data-theme] .fact{border-bottom:1px solid var(--line)}
+:root[data-style=explorer][data-theme] .fact dt{text-transform:uppercase;font-size:12px;color:var(--muted)}
+:root[data-style=explorer][data-theme] .fact dd{font-size:19px}
+
+/* ---- reading text ---- */
+:root[data-style=explorer][data-theme] .guide-text{font-size:20px;line-height:1.65}
+:root[data-style=explorer][data-theme] .guide-text h2{display:flex;align-items:center;gap:12px;font-size:26px}
+:root[data-style=explorer][data-theme] .guide-text h2:after{content:"";flex:1;border-top:1px solid var(--muted);opacity:.6}
+:root[data-style=explorer][data-theme] .glossary-word{color:var(--wax);text-decoration-style:dotted}
+:root[data-style=explorer][data-theme] .sources{border-top:2px dotted var(--muted)}
+:root[data-style=explorer][data-theme] .sources,:root[data-style=explorer][data-theme] .sources li{font-family:var(--type);font-size:14px}
+:root[data-style=explorer][data-theme] .article-navigation{border-top:2px dotted var(--muted)}
+:root[data-style=explorer][data-theme] .article:after{content:"G";display:grid;place-items:center;width:58px;height:58px;margin:30px 0 0 auto;border-radius:50%;transform:rotate(-8deg);color:#e9b9a6;font:400 26px/1 var(--display);background:radial-gradient(circle at 35% 30%,#b9402b,var(--wax) 55%,#4f1308);box-shadow:0 3px 6px rgba(0,0,0,.55),inset 0 0 0 4px rgba(0,0,0,.15)}
+:root[data-style=explorer][data-theme] .history-event{border-left-color:var(--muted)}
+:root[data-style=explorer][data-theme] .history-event:last-child{border-color:transparent}
+:root[data-style=explorer][data-theme] .history-event::before{background:var(--paper);border-color:var(--wax)}
+:root[data-style=explorer][data-theme] .history-event.current::before{background:var(--wax)}
+
+/* ---- buttons ---- */
+:root[data-style=explorer][data-theme] :is(.button,.icon-button,.segmented){background:var(--card);color:var(--ink);border:1px solid rgba(80,45,10,.6);box-shadow:0 1px 2px rgba(40,20,4,.4)}
+:root[data-style=explorer][data-theme] .button{font-family:var(--type);font-size:15px;letter-spacing:.04em}
+:root[data-style=explorer][data-theme] .button:hover,:root[data-style=explorer][data-theme] .icon-button:hover{background:var(--raised)}
+:root[data-style=explorer][data-theme] .button.ghost{background:transparent}
+:root[data-style=explorer][data-theme] .button.primary,:root[data-style=explorer][data-theme] .button.primary:hover{background:var(--bevel);color:#2c1c0f;border-color:#5a3f12;box-shadow:0 2px 0 #3a2509,0 3px 5px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.5);filter:none}
+:root[data-style=explorer][data-theme] .button.primary:active{transform:translateY(2px);box-shadow:inset 0 2px 5px rgba(0,0,0,.6)}
+:root[data-style=explorer][data-theme] .button.danger{color:var(--wax)}
+:root[data-style=explorer][data-theme] a.button:not(.primary){color:var(--ink)}
+:root[data-style=explorer][data-theme] .segmented button{font-family:var(--type);font-size:14px;color:var(--muted)}
+:root[data-style=explorer][data-theme] .segmented button.active{background:var(--bevel);color:#2c1c0f;box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+:root[data-style=explorer][data-theme] .search-wrap{background:var(--card);border-color:rgba(80,45,10,.6);box-shadow:inset 0 0 8px rgba(110,64,16,.3)}
+
+/* ---- banners, toast and dialogs ---- */
+:root[data-style=explorer][data-theme] .banner{background:var(--card);border:1px solid rgba(80,45,10,.55);box-shadow:var(--shadow);color:var(--ink)}
+:root[data-style=explorer][data-theme] .toast{background:var(--leather);color:#f0e2b8;border:1px solid var(--brass);font-family:var(--type)}
+:root[data-style=explorer][data-theme] dialog:not(.photo-dialog){background:var(--stains),var(--grain),radial-gradient(130% 90% at 50% 40%,var(--paper),var(--paper-lo));color:var(--ink);border:1px solid rgba(80,45,10,.7);box-shadow:0 12px 64px rgba(0,0,0,.6),inset 0 0 30px rgba(110,64,16,.4);background-size:100% 100%,220px 220px,auto;background-repeat:no-repeat,repeat,no-repeat}
+:root[data-style=explorer][data-theme] .modal-actions{background:var(--paper-lo);border-top-color:var(--line)}
+:root[data-style=explorer][data-theme] dialog::backdrop{background:rgba(20,10,4,.78)}
+:root[data-style=explorer][data-theme] .import-row select,:root[data-style=explorer][data-theme] .setup pre{background:var(--card);color:var(--ink)}
+
+@media(max-width:680px){
+ :root[data-style=explorer][data-theme] .top-header{margin:8px 8px 0;padding:10px 12px}
+ :root[data-style=explorer][data-theme] .app{margin:0 8px 8px}
+ /* bottom bar: leather strap with brass tabs */
+ :root[data-style=explorer][data-theme] .main-nav{background:radial-gradient(120% 140% at 50% 0,var(--leather-hi),var(--leather));border-top:2px solid #170d06;gap:8px;padding:8px 12px calc(8px + env(safe-area-inset-bottom))}
+ :root[data-style=explorer][data-theme] .nav-tab{min-height:56px;padding:6px 8px;font-size:12px}
+ :root[data-style=explorer][data-theme] .nav-tab svg{width:24px;height:24px}
+ :root[data-style=explorer][data-theme] .page-heading h1,:root[data-style=explorer][data-theme] .article h1{font-size:32px}
+ :root[data-style=explorer][data-theme] .guide-text{font-size:19px}
+ :root[data-style=explorer][data-theme] .toast{bottom:calc(var(--tabbar-height) + 16px)}
+}
+@media(prefers-reduced-motion:reduce){:root[data-style=explorer][data-theme] :is(.day-card,.attraction-card,.photo-tile){transform:none!important}}
