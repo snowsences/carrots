@@ -64,3 +64,6 @@
  .nav-tab span{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
  .nav-tab .nav-icon{width:28px;height:28px}
 }
+
+/* Attraction details: lighter shadow and 70% fill on the content cards. */
+:root .article :is(.facts,.notice-checklist,.originality-section,.comparison){background:color-mix(in srgb,var(--surface) 70%,transparent);box-shadow:0px 2px 4px 0px rgba(0,0,0,0.35)}
