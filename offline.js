@@ -13,6 +13,9 @@ export function photoPlan(trip,today=localDateKey()) {
   const add=(url,day)=>{if(url&&!seen.has(url)){seen.add(url);plan.push({url,day});}};
   add(trip.coverUrl,0);
   for(const day of ordered){const number=trip.days.indexOf(day)+1,photos=day.attractions.flatMap(a=>a.photos);for(const p of photos)add(p.thumbnailUrl,number);for(const p of photos)add(p.url,number);}
+  const wildlife=trip.wildlife?.species || [];
+  for(const s of wildlife)for(const p of s.photos)add(p.thumbnailUrl,0);
+  for(const s of wildlife)for(const p of s.photos)add(p.url,0);
   return plan;
 }
 export function weakConnection() {
@@ -84,7 +87,7 @@ export async function storageReport(downloads) {
     const cache=await caches.has(d.cacheName)?await caches.open(d.cacheName):null,has=async url=>Boolean(cache&&url&&await cache.match(url));
     const plan=photoPlan(d.trip);let cached=0;for(const item of plan)if(await has(item.url))cached++;
     const attractions=[];
-    for(const day of d.trip.days)for(const a of day.attractions){const urls=[...new Set(a.photos.flatMap(p=>[p.thumbnailUrl,p.url]).filter(Boolean))];if(!urls.length)continue;let n=0;for(const url of urls)if(await has(url))n++;attractions.push({id:a.id,name:a.name,cached:n,total:urls.length});}
+    for(const a of [...d.trip.days.flatMap(day=>day.attractions),...(d.trip.wildlife?.species || [])]){const urls=[...new Set(a.photos.flatMap(p=>[p.thumbnailUrl,p.url]).filter(Boolean))];if(!urls.length)continue;let n=0;for(const url of urls)if(await has(url))n++;attractions.push({id:a.id,name:a.name,cached:n,total:urls.length});}
     trips.push({id:d.id,name:d.name,bytes:d.bytes,cached,total:plan.length,attractions});
   }
   const used=new Set(downloads.map(d=>d.cacheName)),names=(await caches.keys()).filter(k=>k.startsWith(PREFIX)&&!used.has(k));

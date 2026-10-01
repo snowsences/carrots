@@ -10,6 +10,6 @@ export const config = Object.freeze({
   },
   // First member enabled. The second slot stays disabled pending their UID from this project's Authentication → Users.
   ownerUids: ['4ct4jQf9cPhbzqiasFT56Mav7Ds1', 'pending-owner-2'],
-  // Wikimedia images are supported by default. Keep this list and the index.html CSP in agreement.
-  imageHosts: ['upload.wikimedia.org', 'thumb.wikimedia.org', 'res.cloudinary.com'],
+  // Wikimedia and iNaturalist open-data images are supported. Keep this list and the index.html CSP in agreement.
+  imageHosts: ['upload.wikimedia.org', 'thumb.wikimedia.org', 'res.cloudinary.com', 'inaturalist-open-data.s3.amazonaws.com'],
 });

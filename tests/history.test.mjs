@@ -45,7 +45,7 @@ test('invalid, misleadingly unordered, or oversized historical data is rejected'
  f.days[0].attractions[1].originality=[];f.glossary.push({term:'NAGAS',definition:'Ambiguous.'});assert.throws(()=>normalizeTrip(f),/unique/);
 });
 
-test('new version 2 files and older version 1 files are both accepted',()=>{
- for(const version of [1,2])assert.equal(parseImport(JSON.stringify({format:'glauco-trip-file',version,trips:[fixture()]}))[0].days[0].attractions[0].history.length,1);
- assert.throws(()=>parseImport(JSON.stringify({format:'glauco-trip-file',version:3,trips:[fixture()]})),/version 1 or 2/);
+test('versions 1, 2 and 3 are accepted',()=>{
+ for(const version of [1,2,3])assert.equal(parseImport(JSON.stringify({format:'glauco-trip-file',version,trips:[fixture()]}))[0].days[0].attractions[0].history.length,1);
+ assert.throws(()=>parseImport(JSON.stringify({format:'glauco-trip-file',version:4,trips:[fixture()]})),/version 1, 2 or 3/);
 });

@@ -15,9 +15,10 @@
     "version": {
       "enum": [
         1,
-        2
+        2,
+        3
       ],
-      "description": "Use version 2 for new guides with history, originality notes, and glossary aliases. Version 1 is accepted for existing files."
+      "description": "Use version 3 for new guides with optional wildlife. Versions 1 and 2 remain accepted."
     },
     "trips": {
       "type": "array",
@@ -356,6 +357,10 @@
           "items": {
             "$ref": "#/$defs/glossaryTerm"
           }
+        },
+        "wildlife": {
+          "$ref": "#/$defs/wildlife",
+          "description": "Optional offline field guide. Store each species once, with multiple where entries. Area IDs and attraction links must resolve within the trip."
         }
       },
       "required": [
@@ -454,6 +459,242 @@
         "text"
       ],
       "additionalProperties": false
+    },
+    "wildlifeArea": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 600
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "wildlifeWhere": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "areaId": {
+          "$ref": "#/$defs/id"
+        },
+        "likelihood": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1500
+        },
+        "attractionIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "maxItems": 30,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "areaId",
+        "likelihood",
+        "note"
+      ]
+    },
+    "lookalike": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "distinction": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1200
+        }
+      },
+      "required": [
+        "name",
+        "distinction"
+      ]
+    },
+    "species": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "flora",
+            "fauna"
+          ]
+        },
+        "group": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "scientificName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          },
+          "maxItems": 12
+        },
+        "status": {
+          "type": "string",
+          "maxLength": 250
+        },
+        "identification": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 700
+          },
+          "maxItems": 8,
+          "minItems": 1
+        },
+        "lookalikes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lookalike"
+          },
+          "maxItems": 6
+        },
+        "summary": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2500
+          },
+          "maxItems": 6,
+          "minItems": 1
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fact"
+          },
+          "maxItems": 12
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/section"
+          },
+          "maxItems": 10
+        },
+        "where": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/wildlifeWhere"
+          },
+          "maxItems": 20,
+          "minItems": 1
+        },
+        "photos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/photo"
+          },
+          "maxItems": 12
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          },
+          "maxItems": 15,
+          "minItems": 1
+        },
+        "researchedAt": {
+          "$ref": "#/$defs/date"
+        },
+        "taxonIds": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "inaturalist": {
+              "$ref": "#/$defs/id"
+            },
+            "gbif": {
+              "$ref": "#/$defs/id"
+            },
+            "ebird": {
+              "$ref": "#/$defs/id"
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "group",
+        "name",
+        "scientificName",
+        "identification",
+        "summary",
+        "where",
+        "sources",
+        "researchedAt"
+      ]
+    },
+    "wildlife": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "areas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/wildlifeArea"
+          },
+          "maxItems": 20
+        },
+        "species": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/species"
+          },
+          "maxItems": 600
+        }
+      },
+      "required": [
+        "areas",
+        "species"
+      ]
     }
   }
 }

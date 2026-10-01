@@ -16,15 +16,21 @@ export const logout=()=>signOut(auth);
 const tripsRef=()=>collection(db,'glauco','shared','trips');
 const tripRef=id=>doc(tripsRef(),id);
 export function listen(callback,error){return onSnapshot(tripsRef(),s=>callback(s.docs.map(d=>d.data())),error);}
-export async function readRemote(meta) {const snap=await getDocs(collection(tripRef(meta.id),'versions',meta.revision,'attractions'));return hydrateTrip(meta,snap.docs.map(d=>d.data()));}
+export async function readRemote(meta) {const base=tripRef(meta.id);const [snap,wildlife]=await Promise.all([getDocs(collection(base,'versions',meta.revision,'attractions')),meta.wildlife?.speciesIds.length?getDocs(collection(base,'versions',meta.revision,'species')):Promise.resolve({docs:[]})]);return hydrateTrip(meta,snap.docs.map(d=>d.data()),wildlife.docs.map(d=>d.data()));}
 export async function saveImport(entry, expectedRevision, isCancelled=()=>false) {
   const reference=tripRef(entry.id), revision=entry.revision;
   const current=await getDoc(reference);
   if((current.exists()&&!current.data().deleted?current.data().revision:null)!==expectedRevision)throw new Error('CONFLICT');
-  const batch=writeBatch(db);
-  for(const {attraction} of attractions(entry.trip))batch.set(doc(reference,'versions',revision,'attractions',attraction.id),attraction);
-  // Immutable content first; the pointer changes only after every attraction is committed.
-  await batch.commit();if(isCancelled())throw new Error('CANCELLED');
+  const content=[...attractions(entry.trip).map(({attraction})=>['attractions',attraction]),...(entry.trip.wildlife?.species || []).map(species=>['species',species])];
+  // Commit immutable content in bounded batches, then change the revision pointer.
+  // Cancellation or a failed batch leaves the previous complete guide selected.
+  for(let offset=0;offset<content.length;offset+=200){
+    if(isCancelled())throw new Error('CANCELLED');
+    const batch=writeBatch(db);
+    for(const [kind,record] of content.slice(offset,offset+200))batch.set(doc(reference,'versions',revision,kind,record.id),record);
+    await batch.commit();
+  }
+  if(isCancelled())throw new Error('CANCELLED');
   await runTransaction(db,async tx=>{const s=await tx.get(reference);if((s.exists()&&!s.data().deleted?s.data().revision:null)!==expectedRevision)throw new Error('CONFLICT');if(isCancelled())throw new Error('CANCELLED');tx.set(reference,{...tripMeta(entry.trip),revision,archived:entry.archived,archiveRevision:entry.archiveRevision,updatedAt:Date.now()});});
 }
 export async function saveArchive(entry,expectedRevision,expectedArchiveRevision,isCancelled=()=>false) {

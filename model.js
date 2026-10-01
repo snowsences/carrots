@@ -29,7 +29,7 @@ export function url(v, label, image = false) {
   if (!s) return '';
   let u; try { u = new URL(s); } catch { fail(`${label} is not a valid URL.`); }
   if (u.protocol !== 'https:' || u.username || u.password) fail(`${label} must be an HTTPS URL without credentials.`);
-  if (image && !config.imageHosts.includes(u.hostname)) fail(`${label}: unsupported image host ${u.hostname}. Use Wikimedia image URLs.`);
+  if (image && !config.imageHosts.includes(u.hostname)) fail(`${label}: unsupported image host ${u.hostname}. Use a supported Wikimedia or iNaturalist open-data image URL.`);
   return u.href;
 }
 function rejectUnsafeKeys(v, depth = 0) {
@@ -39,6 +39,41 @@ function rejectUnsafeKeys(v, depth = 0) {
     rejectUnsafeKeys(v[k], depth + 1);
   }
 }
+function normalizePhotos(value) {
+  const photos = list(value || [], 12, 'Photos').map(p => ({url: url(object(p, 'Photo').url, 'Photo URL', true), thumbnailUrl: url(p.thumbnailUrl || p.url, 'Thumbnail URL', true), caption: text(p.caption, 500, 'Photo caption'), creator: text(p.creator, 180, 'Photo creator'), license: text(p.license, 150, 'Photo license'), licenseUrl: url(p.licenseUrl, 'License link'), sourceUrl: url(p.sourceUrl, 'Photo source link')}));
+  if (photos.some(p => !p.url)) fail('Photos must have a URL.');
+  return photos;
+}
+function normalizeAreas(value) {
+  const areas=list(value || [],20,'Wildlife areas').map(a=>({id:id(object(a,'Wildlife area').id,'Area ID'),name:text(a.name,120,'Area name',true),description:text(a.description,600,'Area description')}));
+  if(new Set(areas.map(a=>a.id)).size!==areas.length)fail('Wildlife area IDs must be unique.');
+  return areas;
+}
+export function normalizeSpecies(value) {
+  const s=object(value,'Species');
+  if(!['flora','fauna'].includes(s.kind))fail('Species kind must be flora or fauna.');
+  const result={id:id(s.id,'Species ID'),kind:s.kind,name:text(s.name,180,'Species name',true),scientificName:text(s.scientificName,180,'Scientific name',true),group:text(s.group,80,'Species group',true),aliases:list(s.aliases || [],12,'Species aliases').map(a=>text(a,180,'Species alias',true)),status:text(s.status,250,'Regional status'),
+    identification:list(s.identification,8,'Identification clues').map(p=>text(p,700,'Identification clue',true)),
+    lookalikes:list(s.lookalikes || [],6,'Lookalikes').map(a=>({name:text(object(a,'Lookalike').name,180,'Lookalike name',true),distinction:text(a.distinction,1200,'Lookalike distinction',true)})),
+    summary:list(s.summary,6,'Species summary').map(p=>text(p,2500,'Species paragraph',true)),
+    facts:list(s.facts || [],12,'Species facts').map(f=>({label:text(object(f,'Fact').label,80,'Fact label',true),value:text(f.value,350,'Fact value',true)})),
+    sections:list(s.sections || [],10,'Species sections').map(a=>({heading:text(object(a,'Section').heading,120,'Section heading',true),paragraphs:list(a.paragraphs,10,'Species paragraphs').map(p=>text(p,3000,'Species paragraph',true))})),
+    where:list(s.where,20,'Where to look').map(a=>({areaId:id(object(a,'Where to look').areaId,'Area ID'),likelihood:text(a.likelihood,180,'Local likelihood',true),note:text(a.note,1500,'Location note',true),attractionIds:list(a.attractionIds || [],30,'Linked attractions').map(v=>id(v,'Linked attraction ID'))})),
+    photos:normalizePhotos(s.photos),sources:list(s.sources,15,'Species sources').map(a=>({title:text(object(a,'Source').title,180,'Source title',true),url:url(a.url,'Source URL')})),researchedAt:date(s.researchedAt,'Species research date',true),taxonIds:{}};
+  for(const key of ['inaturalist','gbif','ebird']){const v=s.taxonIds?.[key];if(v!=null)result.taxonIds[key]=id(String(v),`${key} taxon ID`);}
+  if(!result.identification.length || !result.summary.length || !result.where.length || !result.sources.length || result.sources.some(a=>!a.url))fail('Every species needs identification, a summary, local context, and sources.');
+  if(new Set(result.where.map(a=>a.areaId)).size!==result.where.length)fail('A species may have only one entry per area.');
+  if(bytes(result)>50000)fail('A species guide can contain at most 50 KB.');
+  return result;
+}
+function normalizeWildlife(value,attractionIds) {
+  const w=object(value,'Wildlife'),areas=normalizeAreas(w.areas),areaIds=new Set(areas.map(a=>a.id));
+  const species=list(w.species || [],600,'Species').map(normalizeSpecies);
+  if(new Set(species.map(a=>a.id)).size!==species.length)fail('Species IDs must be unique within a trip.');
+  for(const s of species)for(const location of s.where){if(!areaIds.has(location.areaId))fail(`Unknown wildlife area for ${s.name}.`);if(location.attractionIds.some(a=>!attractionIds.has(a)))fail(`Unknown linked attraction for ${s.name}.`);if(new Set(location.attractionIds).size!==location.attractionIds.length)fail('Linked attraction IDs must be unique.');}
+  return {areas,species};
+}
+
 export function normalizeAttraction(value) {
   const a = object(value, 'Attraction');
   const result = {
@@ -54,7 +89,7 @@ export function normalizeAttraction(value) {
     wikipediaUrl: url(a.wikipediaUrl, 'Wikipedia link'),
     sources: list(a.sources || [], 15, 'Sources').map(s => ({title: text(object(s, 'Source').title, 180, 'Source title', true), url: url(s.url, 'Source link')})),
     researchedAt: date(a.researchedAt, 'Research date'),
-    photos: list(a.photos || [], 12, 'Photos').map(p => ({url: url(object(p, 'Photo').url, 'Photo URL', true), thumbnailUrl: url(p.thumbnailUrl || p.url, 'Thumbnail URL', true), caption: text(p.caption, 500, 'Photo caption'), creator: text(p.creator, 180, 'Photo creator'), license: text(p.license, 150, 'Photo license'), licenseUrl: url(p.licenseUrl, 'License link'), sourceUrl: url(p.sourceUrl, 'Photo source link')})),
+    photos: normalizePhotos(a.photos),
   };
   if (result.notice.length && result.notice.length !== 3) fail('Provide exactly three things to notice, or omit the checklist.');
   if (result.comparisons.some(c => !c.paragraphs.length)) fail('A comparison needs at least one paragraph.');
@@ -97,6 +132,7 @@ export function normalizeTrip(value) {
   }
   if (!result.days.length || attrIds.size > 400) fail('A trip needs between 1 and 400 attractions.');
   if (!result.coverUrl) result.coverUrl = result.days[0].attractions[0].photos[0]?.url || '';
+  if (t.wildlife != null) result.wildlife=normalizeWildlife(t.wildlife,attrIds);
   if (bytes(result) > 5 * 1024 * 1024) fail('A trip can contain at most 5 MB of guide text and metadata.');
   return result;
 }
@@ -104,19 +140,20 @@ export function parseImport(raw) {
   if (new TextEncoder().encode(raw).length > MAX_FILE) fail('Import files can be at most 12 MB.');
   let payload; try { payload = JSON.parse(raw); } catch { fail('This is not valid JSON. Import a Glauco trip file prepared from the template.'); }
   rejectUnsafeKeys(payload); object(payload, 'Import file');
-  if (payload.format !== FORMAT || ![1,2].includes(payload.version)) fail('Use a Glauco trip file with format "glauco-trip-file" and version 1 or 2. Lambus PDFs need to be processed first.');
+  if (payload.format !== FORMAT || ![1,2,3].includes(payload.version)) fail('Use a Glauco trip file with format "glauco-trip-file" and version 1, 2 or 3. Lambus PDFs need to be processed first.');
   const trips = list(payload.trips, 30, 'Trips').map(normalizeTrip);
   if (!trips.length || new Set(trips.map(t=>t.id)).size !== trips.length) fail('The file needs trips with unique IDs.');
   return trips;
 }
 export const attractions = trip => trip.days.flatMap(day => day.attractions.map(attraction => ({day, attraction})));
-export function photoUrls(trip) { return [...new Set([trip.coverUrl, ...attractions(trip).flatMap(({attraction:a})=>a.photos.flatMap(p=>[p.url,p.thumbnailUrl]))].filter(Boolean))]; }
+export function photoUrls(trip) { return [...new Set([trip.coverUrl, ...[...attractions(trip).map(({attraction:a})=>a),...(trip.wildlife?.species || [])].flatMap(a=>a.photos.flatMap(p=>[p.url,p.thumbnailUrl]))].filter(Boolean))]; }
 export function tripMeta(trip) {
-  return {id:trip.id, name:trip.name, year:trip.year, startDate:trip.startDate, endDate:trip.endDate, coverUrl:trip.coverUrl, glossary:trip.glossary || [], days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
+  return {id:trip.id, name:trip.name, year:trip.year, startDate:trip.startDate, endDate:trip.endDate, coverUrl:trip.coverUrl, glossary:trip.glossary || [], ...(trip.wildlife?{wildlife:{areas:trip.wildlife.areas,speciesIds:trip.wildlife.species.map(s=>s.id)}}:{}), days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
 }
-export function hydrateTrip(meta, records) {
+export function hydrateTrip(meta, records, speciesRecords = []) {
   const byId = new Map(records.map(a=>[a.id,a]));
-  return normalizeTrip({...meta, days:meta.days.map(d=>({...d, attractions:d.attractionIds.map(a=>byId.get(a) || fail('A synced trip is incomplete. Try again when online.'))}))});
+  const speciesById=new Map(speciesRecords.map(a=>[a.id,a]));
+  return normalizeTrip({...meta, ...(meta.wildlife?{wildlife:{areas:meta.wildlife.areas,species:meta.wildlife.speciesIds.map(a=>speciesById.get(a)||fail('Synced wildlife is incomplete. Try again when online.'))}}:{}), days:meta.days.map(d=>({...d, attractions:d.attractionIds.map(a=>byId.get(a) || fail('A synced trip is incomplete. Try again when online.'))}))});
 }
 export function dateLabel(value, options = {month:'short',day:'numeric',year:'numeric'}) {
   return value ? new Intl.DateTimeFormat('en-US', options).format(new Date(`${value}T12:00:00`)) : '';
@@ -124,7 +161,8 @@ export function dateLabel(value, options = {month:'short',day:'numeric',year:'nu
 export function sizeLabel(n) { if (n < 1024) return `${n} B`; return n < 1048576 ? `${(n/1024).toFixed(1)} KB` : `${(n/1048576).toFixed(1)} MB`; }
 export function normalizeMeta(value) {
   const m=object(value,'Trip metadata');
-  const trip=normalizeTrip({...m,days:list(m.days,120,'Days').map(d=>({...d,attractions:list(d.attractionIds,100,'Attraction IDs').map(a=>({id:a,name:'Metadata',summary:['Metadata']}))}))});
+  const trip=normalizeTrip({...m,wildlife:undefined,days:list(m.days,120,'Days').map(d=>({...d,attractions:list(d.attractionIds,100,'Attraction IDs').map(a=>({id:a,name:'Metadata',summary:['Metadata']}))}))});
+  let wildlife;if(m.wildlife!=null){const w=object(m.wildlife,'Wildlife metadata'),speciesIds=list(w.speciesIds,600,'Species IDs').map(a=>id(a,'Species ID'));if(new Set(speciesIds).size!==speciesIds.length)fail('Species IDs must be unique.');wildlife={areas:normalizeAreas(w.areas),speciesIds};}
   if(typeof m.archived!=='boolean')fail('Invalid archive state.');
-  return {...tripMeta(trip),revision:id(m.revision,'Revision'),archiveRevision:id(m.archiveRevision,'Archive revision'),archived:m.archived,updatedAt:Number.isFinite(m.updatedAt)?m.updatedAt:0};
+  return {...tripMeta(trip),...(wildlife?{wildlife}:{}),revision:id(m.revision,'Revision'),archiveRevision:id(m.archiveRevision,'Archive revision'),archived:m.archived,updatedAt:Number.isFinite(m.updatedAt)?m.updatedAt:0};
 }
