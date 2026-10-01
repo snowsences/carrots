@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://glauco.local/import-schema-v1",
-  "title": "Glauco trip file v1",
+  "title": "Glauco trip file",
   "type": "object",
   "required": [
     "format",
@@ -13,7 +13,11 @@
       "const": "glauco-trip-file"
     },
     "version": {
-      "const": 1
+      "enum": [
+        1,
+        2
+      ],
+      "description": "Use version 2 for new guides with history, originality notes, and glossary aliases. Version 1 is accepted for existing files."
     },
     "trips": {
       "type": "array",
@@ -245,6 +249,25 @@
           "maxItems": 12,
           "items": {
             "$ref": "#/$defs/comparison"
+          },
+          "description": "Optional. Keep only substantive historical, religious, architectural, or material connections to earlier stops. Omit rather than manufacture an analogy."
+        },
+        "history": {
+          "type": "array",
+          "maxItems": 8,
+          "description": "Optional chronological milestones. Omit when a reliable date or an interesting development is unavailable.",
+          "items": {
+            "$ref": "#/$defs/historyEvent"
+          }
+        },
+        "originality": {
+          "type": "array",
+          "maxItems": 4,
+          "description": "Optional concise, specific notes distinguishing original fabric, later historical alterations, and modern reconstruction. Include only information that helps visitors understand what they can see. No generic conservation filler.",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1800
           }
         }
       },
@@ -382,11 +405,53 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 800
+        },
+        "aliases": {
+          "type": "array",
+          "maxItems": 8,
+          "description": "Optional exact alternative spellings, singular/plural forms, or shorter names to make tappable in guide prose. All terms and aliases must be unique, ignoring case.",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
         }
       },
       "required": [
         "term",
         "definition"
+      ],
+      "additionalProperties": false
+    },
+    "historyEvent": {
+      "type": "object",
+      "description": "A meaningful, sourced milestone for this site. year is a chronological sorting anchor; label expresses the actual precision, such as Late 12th century. Do not turn an approximate period into a claimed exact year.",
+      "properties": {
+        "year": {
+          "type": "integer",
+          "minimum": -10000,
+          "maximum": 2200
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 1200
+        }
+      },
+      "required": [
+        "year",
+        "label",
+        "title",
+        "text"
       ],
       "additionalProperties": false
     }
