@@ -48,3 +48,6 @@
 
 :root:not([data-theme=light]) body.attraction-view{--bg:var(--attraction-bg,#0d0d0d)}
 :root[data-theme=light] body.attraction-view{--bg:#fff}
+
+
+.nav-icon{fill:currentColor;stroke:none}.nav-icon .icon-selected{display:none}.nav-tab.active .nav-icon .icon-outline{display:none}.nav-tab.active .nav-icon .icon-selected{display:inline}

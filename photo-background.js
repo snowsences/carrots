@@ -1,5 +1,5 @@
 // Sample a small image and favor its most common mid-tone color.
-export function backgroundFromPixels(pixels) {
+export function backgroundFromPixels(pixels,brightnessScale=1) {
   const bins=new Map();
   for(let i=0;i<pixels.length;i+=4) {
     const [r,g,b,alpha]=pixels.slice(i,i+4);
@@ -12,15 +12,16 @@ export function backgroundFromPixels(pixels) {
   }
   const dominant=[...bins.values()].sort((a,b)=>b.count-a.count)[0];
   if(!dominant)return null;
-  // Retain the hue at very low brightness, with a small floor near black.
-  const color=['r','g','b'].map(channel=>Math.round(6+.12*dominant[channel]/dominant.count));
+  // Retain the hue near black; Classic can request a lighter tint.
+  const color=['r','g','b'].map(channel=>Math.round(brightnessScale*(6+.12*dominant[channel]/dominant.count)));
   return `rgb(${color.join(', ')})`;
 }
 
 const colors=new Map();
-export function photoBackground(url) {
+export function photoBackground(url,brightnessScale=1) {
   if(!url)return Promise.resolve(null);
-  if(colors.has(url))return colors.get(url);
+  const key=`${brightnessScale}:${url}`;
+  if(colors.has(key))return colors.get(key);
   const task=(async()=>{
     let source,localUrl;
     try {
@@ -37,10 +38,11 @@ export function photoBackground(url) {
       const canvas=document.createElement('canvas');canvas.width=canvas.height=32;
       const context=canvas.getContext('2d',{willReadFrequently:true});
       context.drawImage(source,0,0,32,32);
-      return backgroundFromPixels(context.getImageData(0,0,32,32).data);
+      return backgroundFromPixels(context.getImageData(0,0,32,32).data,brightnessScale);
     }catch{return null;}finally{if(localUrl)URL.revokeObjectURL(localUrl);}
   })();
-  colors.set(url,task);
-  task.then(color=>{if(!color)colors.delete(url);});
+  colors.set(key,task);
+  task.then(color=>{if(!color)colors.delete(key);});
   return task;
 }
+
