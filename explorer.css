@@ -116,3 +116,6 @@
  :root[data-style=explorer][data-theme] .toast{bottom:calc(var(--tabbar-height) + 16px)}
 }
 @media(prefers-reduced-motion:reduce){:root[data-style=explorer][data-theme] :is(.day-card,.attraction-card,.photo-tile){transform:none!important}}
+
+/* Classic tints the page from the cover photo on attraction screens; Explorer keeps its parchment. */
+:root[data-style=explorer][data-theme] body.attraction-view{--bg:var(--paper)}
