@@ -12,3 +12,6 @@ export function orderedTrips(entries,today=localDateKey()) {
 }
 export function defaultTripId(entries,today=localDateKey()) {return orderedTrips(entries,today)[0]?.id||null;}
 export function todayDay(entry,today=localDateKey()) {return entry?.meta.days.find(d=>d.date===today)||null;}
+
+export function dayNumber(trip,dayId) {return trip.days.findIndex(day=>day.id===dayId)+1;}
+export function dayTitle(trip,day) {return `Day ${dayNumber(trip,day.id)}: ${day.title}`;}

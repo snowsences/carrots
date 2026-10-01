@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {normalizeTrip,tripMeta,normalizeMeta,hydrateTrip} from '../model.js';
-import {defaultTripId,orderedTrips,todayDay,localDateKey} from '../navigation.js';
+import {defaultTripId,orderedTrips,todayDay,localDateKey,dayNumber,dayTitle} from '../navigation.js';
 import {guidesForTrip} from '../customs.js';
 const attraction=id=>({id,name:id,location:'Cambodia',summary:['A brief guide.']});
 function fixture(){return {id:'trip',name:'Cambodia and Thailand',year:2026,startDate:'2026-10-19',endDate:'2026-10-20',days:[{id:'one',date:'2026-10-19',title:'First day',attractions:[attraction('first'),attraction('second')]},{id:'two',date:'2026-10-20',title:'Second day',attractions:[attraction('third')]}]};}
@@ -14,3 +14,5 @@ const entry=(id,startDate,endDate,archived=false)=>({id,archived,meta:{name:id,s
 test('default trip favors active/current, upcoming soonest, and recent past',()=>{const entries=[entry('far','2026-11-01','2026-11-03'),entry('past','2026-09-01','2026-09-03'),entry('soon','2026-10-22','2026-10-23'),entry('archive','2026-10-19','2026-10-20',true),entry('current','2026-10-18','2026-10-20')];assert.equal(defaultTripId(entries,'2026-10-19'),'current');assert.equal(defaultTripId(entries.filter(e=>e.id!=='current'),'2026-10-19'),'soon');assert.equal(defaultTripId(entries,'2026-12-01'),'far');assert.equal(orderedTrips(entries,'2026-10-19').at(-1).id,'archive');assert.equal(defaultTripId(entries.filter(e=>e.archived),'2026-10-19'),'archive');assert.equal(defaultTripId([]),null);});
 test('today matches an actual itinerary day, using local calendar fields',()=>{assert.equal(localDateKey(new Date(2026,9,19,23,59)),'2026-10-19');assert.equal(todayDay(entry('a','2026-10-19','2026-10-23'),'2026-10-19').id,'day');assert.equal(todayDay(entry('a','2026-10-19','2026-10-23'),'2026-10-20'),null);});
 test('country guides match destinations and avoid unrelated narrative mentions',()=>{const f=fixture();assert.deepEqual(guidesForTrip(f).map(g=>g.id),['cambodia','thailand']);const other={name:'Japan',days:[{attractions:[{location:'Kyoto',summary:['Unlike Angkor Wat in Cambodia.']}]}]};assert.deepEqual(guidesForTrip(other),[]);});
+
+test('day numbering follows the guide order without changing source titles',()=>{const trip=fixture(),titles=trip.days.map(d=>d.title);assert.equal(dayNumber(trip,'one'),1);assert.equal(dayNumber(trip,'two'),2);assert.equal(dayTitle(trip,trip.days[1]),'Day 2: Second day');assert.deepEqual(trip.days.map(d=>d.title),titles);});
