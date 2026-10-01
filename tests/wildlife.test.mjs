@@ -18,9 +18,9 @@ test('invalid areas, links, IDs, taxonomy kinds and incomplete species fail befo
  assert.throws(change(t=>t.wildlife.species[0].where[0].attractionIds=['missing']),/Unknown linked attraction/);
  assert.throws(change(t=>t.wildlife.species.push(species())),/Species IDs must be unique/);
  assert.throws(change(t=>t.wildlife.species[0].kind='other'),/flora or fauna/);
- assert.throws(change(t=>t.wildlife.species[0].sources=[]),/sources/);
+ assert.throws(change(t=>t.wildlife.species[0].sources=[{title:'Missing URL'}]),/sources/);
  assert.throws(change(t=>t.wildlife.species[0].identification=[]),/identification/);
- assert.throws(change(t=>t.wildlife.species[0].researchedAt=''),/Species research date/);
+ assert.throws(change(t=>t.wildlife.species[0].wikipediaUrl='https://example.org'),/Wikipedia links/);
 });
 test('wildlife photos join deduplicated resumable download plans',()=>{
  const t=normalizeTrip(fixture());const urls=photoUrls(t);const plan=photoPlan(t);
@@ -36,4 +36,18 @@ test('species search supports common names, scientific names, aliases, clues and
 test('older trip files need no wildlife fields',()=>{
  const t=fixture();delete t.wildlife;
  for(const version of [1,2]){const trip=parseImport(JSON.stringify({format:'glauco-trip-file',version,trips:[t]}))[0];assert.equal(trip.wildlife,undefined);assert.deepEqual(hydrateTrip(tripMeta(trip),trip.days[0].attractions),trip);}
+});
+
+test('minimal regional wildlife survives cloud hydration and searches without itinerary context',()=>{
+ const t=fixture();t.wildlife.browseByArea=true;
+ const s=t.wildlife.species[0];s.areaIds=['forest'];s.wikipediaUrl='https://en.wikipedia.org/wiki/Macaca_fascicularis';
+ delete s.where;delete s.sources;delete s.researchedAt;
+ const trip=parseImport(JSON.stringify({format:'glauco-trip-file',version:4,trips:[t]}))[0];
+ const meta=normalizeMeta({...tripMeta(trip),revision:'rev',archiveRevision:'archive',archived:false});
+ assert.equal(meta.wildlife.browseByArea,true);assert.deepEqual(hydrateTrip(meta,trip.days[0].attractions,trip.wildlife.species),trip);
+ assert.equal(speciesMatches(trip.wildlife.species[0],'macaque','forest'),true);
+ assert.deepEqual(trip.wildlife.species[0].where,[]);assert.deepEqual(trip.wildlife.species[0].sources,[]);
+ s.areaIds=['missing'];assert.throws(()=>normalizeTrip(t),/Unknown wildlife area/);
+ s.areaIds=[];assert.throws(()=>normalizeTrip(t),/at least one area/);
+ t.wildlife.browseByArea='yes';assert.throws(()=>normalizeTrip(t),/true or false/);
 });

@@ -16,9 +16,10 @@
       "enum": [
         1,
         2,
-        3
+        3,
+        4
       ],
-      "description": "Use version 3 for new guides with optional wildlife. Versions 1 and 2 remain accepted."
+      "description": "Use version 4 for new guides with regional wildlife and simplified species entries. Versions 1, 2 and 3 remain accepted."
     },
     "trips": {
       "type": "array",
@@ -621,8 +622,7 @@
           "items": {
             "$ref": "#/$defs/wildlifeWhere"
           },
-          "maxItems": 20,
-          "minItems": 1
+          "maxItems": 20
         },
         "photos": {
           "type": "array",
@@ -636,8 +636,7 @@
           "items": {
             "$ref": "#/$defs/source"
           },
-          "maxItems": 15,
-          "minItems": 1
+          "maxItems": 15
         },
         "researchedAt": {
           "$ref": "#/$defs/date"
@@ -657,6 +656,17 @@
             }
           },
           "required": []
+        },
+        "areaIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "maxItems": 20,
+          "uniqueItems": true
+        },
+        "wikipediaUrl": {
+          "$ref": "#/$defs/optionalUrl"
         }
       },
       "required": [
@@ -666,10 +676,7 @@
         "name",
         "scientificName",
         "identification",
-        "summary",
-        "where",
-        "sources",
-        "researchedAt"
+        "summary"
       ]
     },
     "wildlife": {
@@ -689,6 +696,10 @@
             "$ref": "#/$defs/species"
           },
           "maxItems": 600
+        },
+        "browseByArea": {
+          "type": "boolean",
+          "description": "Show region cards first, with Plants, Birds and Other animals within each region. Each species needs matching areaIds."
         }
       },
       "required": [
