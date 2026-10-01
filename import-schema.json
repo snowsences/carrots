@@ -221,6 +221,31 @@
           "items": {
             "$ref": "#/$defs/photo"
           }
+        },
+        "notice": {
+          "description": "Exactly three brief, specific things to notice on site. Omit or use [] if unavailable.",
+          "type": "array",
+          "maxItems": 3,
+          "anyOf": [
+            {
+              "maxItems": 0
+            },
+            {
+              "minItems": 3
+            }
+          ],
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "comparisons": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {
+            "$ref": "#/$defs/comparison"
+          }
         }
       },
       "required": [
@@ -301,6 +326,13 @@
           "items": {
             "$ref": "#/$defs/day"
           }
+        },
+        "glossary": {
+          "type": "array",
+          "maxItems": 60,
+          "items": {
+            "$ref": "#/$defs/glossaryTerm"
+          }
         }
       },
       "required": [
@@ -311,6 +343,50 @@
         "endDate",
         "coverUrl",
         "days"
+      ],
+      "additionalProperties": false
+    },
+    "comparison": {
+      "type": "object",
+      "description": "Relate the current site to an attraction visited earlier in this itinerary. Never discuss future attractions. The app checks attractionId against itinerary order.",
+      "properties": {
+        "attractionId": {
+          "$ref": "#/$defs/id"
+        },
+        "paragraphs": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1800
+          }
+        }
+      },
+      "required": [
+        "attractionId",
+        "paragraphs"
+      ],
+      "additionalProperties": false
+    },
+    "glossaryTerm": {
+      "type": "object",
+      "properties": {
+        "term": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "definition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 800
+        }
+      },
+      "required": [
+        "term",
+        "definition"
       ],
       "additionalProperties": false
     }

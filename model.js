@@ -44,6 +44,8 @@ export function normalizeAttraction(value) {
   const result = {
     id: id(a.id, 'Attraction ID'), name: text(a.name, 180, 'Attraction name', true),
     location: text(a.location, 250, 'Location'), visitTime: text(a.visitTime, 40, 'Visit time'),
+    notice: list(a.notice || [], 3, 'Things to notice').map(p => text(p, 300, 'Thing to notice', true)),
+    comparisons: list(a.comparisons || [], 12, 'Comparisons').map(c => ({attractionId:id(object(c, 'Comparison').attractionId, 'Comparison attraction ID'), paragraphs:list(c.paragraphs, 4, 'Comparison paragraphs').map(p => text(p, 1800, 'Comparison paragraph', true))})),
     summary: list(a.summary, 8, 'Summary paragraphs').map(p => text(p, 4000, 'Summary paragraph', true)),
     facts: list(a.facts || [], 15, 'Facts').map(f => ({label: text(object(f, 'Fact').label, 80, 'Fact label', true), value: text(f.value, 350, 'Fact value', true)})),
     sections: list(a.sections || [], 15, 'Sections').map(s => ({heading: text(object(s, 'Section').heading, 120, 'Section heading', true), paragraphs: list(s.paragraphs, 20, 'Paragraphs').map(p => text(p, 6000, 'Paragraph', true))})),
@@ -52,6 +54,8 @@ export function normalizeAttraction(value) {
     researchedAt: date(a.researchedAt, 'Research date'),
     photos: list(a.photos || [], 12, 'Photos').map(p => ({url: url(object(p, 'Photo').url, 'Photo URL', true), thumbnailUrl: url(p.thumbnailUrl || p.url, 'Thumbnail URL', true), caption: text(p.caption, 500, 'Photo caption'), creator: text(p.creator, 180, 'Photo creator'), license: text(p.license, 150, 'Photo license'), licenseUrl: url(p.licenseUrl, 'License link'), sourceUrl: url(p.sourceUrl, 'Photo source link')})),
   };
+  if (result.notice.length && result.notice.length !== 3) fail('Provide exactly three things to notice, or omit the checklist.');
+  if (result.comparisons.some(c => !c.paragraphs.length)) fail('A comparison needs at least one paragraph.');
   if (!result.summary.length) fail('Every attraction needs a short summary.');
   if (result.photos.some(p => !p.url)) fail('Photos must have a URL.');
   if (result.sources.some(s => !s.url)) fail('Sources must have a URL.');
@@ -62,7 +66,7 @@ export function normalizeAttraction(value) {
 export function normalizeTrip(value) {
   const t = object(value, 'Trip');
   if (!Number.isInteger(t.year) || t.year < 1900 || t.year > 2200) fail('Trip year must be between 1900 and 2200.');
-  const result = {id: id(t.id, 'Trip ID'), name: text(t.name, 180, 'Trip name', true), year: t.year, startDate: date(t.startDate, 'Start date', true), endDate: date(t.endDate, 'End date', true), coverUrl: url(t.coverUrl, 'Cover image', true), days: []};
+  const result = {id: id(t.id, 'Trip ID'), name: text(t.name, 180, 'Trip name', true), year: t.year, startDate: date(t.startDate, 'Start date', true), endDate: date(t.endDate, 'End date', true), coverUrl: url(t.coverUrl, 'Cover image', true), glossary:list(t.glossary || [], 60, 'Glossary').map(g => ({term:text(object(g, 'Glossary term').term, 80, 'Glossary term', true), definition:text(g.definition, 800, 'Glossary definition', true)})), days: []};
   if (result.endDate < result.startDate || Number(result.startDate.slice(0,4)) !== t.year) fail('Trip dates must be in order, and the year must match the start date.');
   const dayIds = new Set(), attrIds = new Set(); let previous = '';
   for (const d of list(t.days, 120, 'Days')) {
@@ -76,6 +80,16 @@ export function normalizeTrip(value) {
     }
     if (!day.attractions.length) fail('Omit days with no attractions.');
     result.days.push(day);
+  }
+  const visited = new Set();
+  for (const day of result.days) for (const a of day.attractions) {
+    const compared = new Set();
+    for (const c of a.comparisons) {
+      if (!visited.has(c.attractionId)) fail(`Comparisons for ${a.name} may reference only earlier attractions in this trip. Future sites, the current site, and unknown IDs are not allowed.`);
+      if (compared.has(c.attractionId)) fail(`Duplicate comparison for ${a.name}.`);
+      compared.add(c.attractionId);
+    }
+    visited.add(a.id);
   }
   if (!result.days.length || attrIds.size > 400) fail('A trip needs between 1 and 400 attractions.');
   if (!result.coverUrl) result.coverUrl = result.days[0].attractions[0].photos[0]?.url || '';
@@ -94,7 +108,7 @@ export function parseImport(raw) {
 export const attractions = trip => trip.days.flatMap(day => day.attractions.map(attraction => ({day, attraction})));
 export function photoUrls(trip) { return [...new Set([trip.coverUrl, ...attractions(trip).flatMap(({attraction:a})=>a.photos.flatMap(p=>[p.url,p.thumbnailUrl]))].filter(Boolean))]; }
 export function tripMeta(trip) {
-  return {id:trip.id, name:trip.name, year:trip.year, startDate:trip.startDate, endDate:trip.endDate, coverUrl:trip.coverUrl, days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
+  return {id:trip.id, name:trip.name, year:trip.year, startDate:trip.startDate, endDate:trip.endDate, coverUrl:trip.coverUrl, glossary:trip.glossary || [], days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
 }
 export function hydrateTrip(meta, records) {
   const byId = new Map(records.map(a=>[a.id,a]));
