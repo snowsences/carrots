@@ -374,6 +374,9 @@
         "wildlife": {
           "$ref": "#/$defs/wildlife",
           "description": "Optional offline field guide. Store each species once, with multiple where entries. Area IDs and attraction links must resolve within the trip."
+        },
+        "customs": {
+          "$ref": "#/$defs/customs"
         }
       },
       "required": [
@@ -719,6 +722,78 @@
         "species"
       ]
     },
+    "customs": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional local customs and language guides, saved and downloaded with this guidebook. A nonempty guides list replaces bundled customs. Omit or use an empty guides list for the bundled fallback. Maximum 100 KiB normalized content in total.",
+      "properties": {
+        "guides": {
+          "type": "array",
+          "maxItems": 12,
+          "items": {"$ref": "#/$defs/customsGuide"}
+        }
+      },
+      "required": ["guides"]
+    },
+    "customsGuide": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A country, region or language guide. IDs must be unique within customs.guides. Needs at least one section or phrase and can contain at most 50 KiB after normalization.",
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "name": {"type": "string", "minLength": 1, "maxLength": 120},
+        "intro": {"type": "string", "maxLength": 1200},
+        "sections": {
+          "type": "array", "maxItems": 15,
+          "items": {"$ref": "#/$defs/customsSection"}
+        },
+        "language": {"type": "string", "maxLength": 80},
+        "lang": {
+          "type": "string", "maxLength": 35,
+          "pattern": "^(?:[a-zA-Z]{2,8}(?:-[a-zA-Z0-9]{1,8})*)?$",
+          "description": "Language tag for the local phrase text, such as it, es or pt-BR. Required and nonempty when phrases are included."
+        },
+        "phraseNote": {"type": "string", "maxLength": 1200},
+        "phrases": {
+          "type": "array", "maxItems": 40,
+          "items": {"$ref": "#/$defs/customsPhrase"}
+        },
+        "sources": {
+          "type": "array", "maxItems": 15,
+          "items": {"$ref": "#/$defs/source"}
+        },
+        "researchedAt": {"$ref": "#/$defs/date"}
+      },
+      "required": ["id", "name", "researchedAt"],
+      "anyOf": [
+        {"required": ["sections"], "properties": {"sections": {"minItems": 1}}},
+        {"required": ["phrases"], "properties": {"phrases": {"minItems": 1}}}
+      ],
+      "allOf": [{
+        "if": {"required": ["phrases"], "properties": {"phrases": {"minItems": 1}}},
+        "then": {"required": ["language", "lang"], "properties": {"language": {"minLength": 1}, "lang": {"minLength": 1}}}
+      }]
+    },
+    "customsSection": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "heading": {"type": "string", "minLength": 1, "maxLength": 120},
+        "paragraphs": {
+          "type": "array", "minItems": 1, "maxItems": 12,
+          "items": {"type": "string", "minLength": 1, "maxLength": 3000}
+        }
+      },
+      "required": ["heading", "paragraphs"]
+    },
+    "customsPhrase": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "meaning": {"type": "string", "minLength": 1, "maxLength": 180},
+        "native": {"type": "string", "minLength": 1, "maxLength": 250},
+        "pronunciation": {"type": "string", "maxLength": 250}
+      },
+      "required": ["meaning", "native"]
+    },
     "place": {
       "type": "object",
       "additionalProperties": false,
@@ -783,6 +858,9 @@
         "wildlife": {
           "$ref": "#/$defs/wildlife",
           "description": "Optional offline field guide for the destination."
+        },
+        "customs": {
+          "$ref": "#/$defs/customs"
         }
       },
       "required": [

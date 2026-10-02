@@ -33,3 +33,14 @@ batchSizes=[];let cancelled=false;afterBatch=()=>cancelled=true;
 await assert.rejects(cloud.saveImport({...entry,trip:largeTrip,revision:'cancelled'},'wildlife',()=>cancelled),/CANCELLED/);
 assert.equal(records.get(key).revision,'wildlife');assert.equal(batchSizes.length,1);
 console.log('PASS wildlife imports: 350 species batched with attractions, failed or cancelled later batches preserve the previous revision.');
+
+const customs={guides:[{id:'italy',name:'Italy',sections:[{heading:'Courtesy',paragraphs:['A prepared customs guide.']}],researchedAt:'2026-10-02'}]};
+await cloud.saveImport({...entry,trip:{...trip,customs},revision:'customs'},'wildlife');
+assert.deepEqual(records.get(key).customs,customs);
+await cloud.saveArchive({...entry,revision:'customs',archiveRevision:'archive-next',archived:true},'customs','archive');
+assert.deepEqual(records.get(key).customs,customs);
+await assert.rejects(cloud.saveImport({...entry,trip:{...trip,customs:{guides:[]}},revision:'cancelled-customs'},'customs',()=>true),/CANCELLED/);
+assert.deepEqual(records.get(key).customs,customs);
+await cloud.saveImport({...entry,trip,revision:'without-customs'},'customs');
+assert.equal(records.get(key).customs,undefined);
+console.log('PASS customs imports: metadata saved atomically, archive preserves customs, cancelled replacement retains previous content, deliberate replacement can restore bundled fallback.');

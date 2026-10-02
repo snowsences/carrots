@@ -107,6 +107,27 @@ export function normalizeAttraction(value) {
   if (bytes(result) > 65000) fail(`The guide for ${result.name} is too large (maximum 65 KB).`);
   return result;
 }
+function normalizeCustoms(value) {
+  const customs=object(value,'Customs');
+  const guides=list(customs.guides,12,'Customs guides').map(value=>{
+    const g=object(value,'Customs guide');
+    const result={id:id(g.id,'Customs guide ID'),name:text(g.name,120,'Customs guide name',true),intro:text(g.intro,1200,'Customs introduction'),
+      sections:list(g.sections || [],15,'Customs sections').map(s=>({heading:text(object(s,'Customs section').heading,120,'Customs heading',true),paragraphs:list(s.paragraphs,12,'Customs paragraphs').map(p=>text(p,3000,'Customs paragraph',true))})),
+      language:text(g.language,80,'Language'),lang:text(g.lang,35,'Language tag'),phraseNote:text(g.phraseNote,1200,'Phrase note'),
+      phrases:list(g.phrases || [],40,'Useful phrases').map(p=>({meaning:text(object(p,'Phrase').meaning,180,'Phrase meaning',true),native:text(p.native,250,'Local phrase',true),pronunciation:text(p.pronunciation,250,'Phrase pronunciation')})),
+      sources:list(g.sources || [],15,'Customs sources').map(s=>({title:text(object(s,'Customs source').title,180,'Customs source title',true),url:url(s.url,'Customs source URL')})),researchedAt:date(g.researchedAt,'Customs research date',true)};
+    if(result.lang&&!/^[a-zA-Z]{2,8}(?:-[a-zA-Z0-9]{1,8})*$/.test(result.lang))fail('Use a valid language tag such as es, it or pt-BR.');
+    if(result.phrases.length&&(!result.language||!result.lang))fail('Customs phrases need a language name and language tag.');
+    if(result.sections.some(s=>!s.paragraphs.length))fail('Customs sections need at least one paragraph.');
+    if(!result.sections.length&&!result.phrases.length)fail('A customs guide needs sections or useful phrases.');
+    if(result.sources.some(s=>!s.url))fail('Customs sources need HTTPS URLs.');
+    if(bytes(result)>50*1024)fail('A customs guide can contain at most 50 KB.');
+    return result;
+  });
+  if(new Set(guides.map(g=>g.id)).size!==guides.length)fail('Customs guide IDs must be unique.');
+  const result={guides};if(bytes(result)>100*1024)fail('Customs content can contain at most 100 KB per guidebook.');
+  return result;
+}
 export function normalizeTrip(value) {
   const t = object(value, 'Trip');
   if (t.guideType != null && !['trip','destination'].includes(t.guideType)) fail('Guide type must be trip or destination.');
@@ -144,6 +165,7 @@ export function normalizeTrip(value) {
   if (!result.days.length || attrIds.size > 400) fail(`${destination?'A destination guide':'A trip'} needs between 1 and 400 attractions.`);
   if (!result.coverUrl) result.coverUrl = result.days[0].attractions[0].photos[0]?.url || '';
   if (t.wildlife != null) result.wildlife=normalizeWildlife(t.wildlife,attrIds);
+  if (t.customs != null) result.customs=normalizeCustoms(t.customs);
   if (bytes(result) > 5 * 1024 * 1024) fail('A guidebook can contain at most 5 MB of guide text and metadata.');
   return result;
 }
@@ -162,7 +184,7 @@ export function parseImport(raw) {
 export const attractions = trip => trip.days.flatMap(day => day.attractions.map(attraction => ({day, attraction})));
 export function photoUrls(trip) { return [...new Set([trip.coverUrl, ...[...attractions(trip).map(({attraction:a})=>a),...(trip.wildlife?.species || [])].flatMap(a=>a.photos.flatMap(p=>[p.url,p.thumbnailUrl]))].filter(Boolean))]; }
 export function tripMeta(trip) {
-  return {id:trip.id, name:trip.name, ...(trip.guideType==='destination'?{guideType:'destination'}:{year:trip.year,startDate:trip.startDate,endDate:trip.endDate}), coverUrl:trip.coverUrl, glossary:trip.glossary || [], ...(trip.wildlife?{wildlife:{browseByArea:trip.wildlife.browseByArea,areas:trip.wildlife.areas,speciesIds:trip.wildlife.species.map(s=>s.id)}}:{}), days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
+  return {id:trip.id, name:trip.name, ...(trip.guideType==='destination'?{guideType:'destination'}:{year:trip.year,startDate:trip.startDate,endDate:trip.endDate}), coverUrl:trip.coverUrl, glossary:trip.glossary || [], ...(trip.customs?{customs:trip.customs}:{}), ...(trip.wildlife?{wildlife:{browseByArea:trip.wildlife.browseByArea,areas:trip.wildlife.areas,speciesIds:trip.wildlife.species.map(s=>s.id)}}:{}), days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
 }
 export function hydrateTrip(meta, records, speciesRecords = []) {
   const byId = new Map(records.map(a=>[a.id,a]));

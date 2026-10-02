@@ -116,8 +116,12 @@ export const guides=[{
  ]
 }];
 export function guidesForTrip(trip) {
+ // A prepared guidebook owns its complete country/region selection. Older files keep the bundled fallback.
+ if(trip.customs?.guides?.length)return trip.customs.guides;
  // Detect destinations from the title and locations, not narrative mentions of other countries.
  const locations=[trip.name,...trip.days.flatMap(d=>d.attractions.map(a=>a.location))].join('\n');
- return guides.filter(g=>g.matches.test(locations));
+ return guides.filter(g=>g.matches.test(locations)).map(g=>({...g,researchedAt,
+  phrases:g.phrases.map(([meaning,native,pronunciation])=>({meaning,native,pronunciation})),
+  sources:g.sources.map(([title,url])=>({title,url}))}));
 }
 export const researchedAt='2026-10-01';
