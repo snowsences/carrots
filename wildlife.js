@@ -1,4 +1,4 @@
-// Wildlife is prepared in trip files. Browsing never queries a live taxonomy API.
+// Wildlife is prepared in guidebook files. Browsing never queries a live taxonomy API.
 const browsing=new Map();
 export const clearWildlifeBrowsing=()=>browsing.clear();
 export const wildlifeHref=(tripId,kind='',speciesId='')=>`#/wildlife/${tripId}${kind?`/${kind}`:''}${speciesId?`/${speciesId}`:''}`;
@@ -11,7 +11,7 @@ export function speciesMatches(species,query,areaId='') {
 export function renderWildlifeView(entry,trip,route,ui) {
   const {h,link,back,image,main,empty,guideParagraph,external,showPhotos,applyBackground}=ui;
   const wildlife=trip.wildlife,all=wildlife?.species || [];
-  if(!wildlife || !all.length){main.replaceChildren(empty('No wildlife guide in this trip yet.','Import an updated trip file in Settings to add plants and animals.'));return;}
+  if(!wildlife || !all.length){main.replaceChildren(empty('No wildlife guide here yet.','Import an updated guidebook file in Settings to add plants and animals.'));return;}
   const root=wildlifeHref(entry.id),kind=route.day,region=wildlife.browseByArea?wildlife.areas.find(a=>`region-${a.id}`===kind):null;
   const title=region?.name || labels[kind],groupOf=s=>region?(s.kind==='flora'?'Plants':s.group==='Birds'?'Birds':'Other animals'):s.group;
   const card=(s,href)=>h('article',{class:'attraction-card wildlife-card'},link([image(s.photos[0]?.thumbnailUrl || s.photos[0]?.url,'',s.photos.length?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},s.name),h('p',{},h('i',{},s.scientificName)))],href,{class:'attraction-link'}));
@@ -54,7 +54,7 @@ export function renderWildlifeView(entry,trip,route,ui) {
     });
     jump.replaceChildren();results.replaceChildren();
     const area=areas.find(a=>a.id===saved.area);if(area?.description)results.append(h('p',{class:'muted'},area.description));
-    if(!matches.length){results.append(h('p',{class:'muted'},species.length?'No matching species. Try a different search or area.':'This section has no entries in this trip file yet.'));return;}
+    if(!matches.length){results.append(h('p',{class:'muted'},species.length?'No matching species. Try a different search or area.':'This section has no entries in this guidebook yet.'));return;}
     for(const [index,group] of groups.entries()){
       const id=`wildlife-group-${index}`;
       if(groups.length>1)jump.append(h('button',{type:'button',class:'button ghost',onclick:()=>document.getElementById(id)?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'})},group));

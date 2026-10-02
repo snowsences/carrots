@@ -84,7 +84,7 @@ export function normalizeAttraction(value) {
   const a = object(value, 'Attraction');
   const result = {
     id: id(a.id, 'Attraction ID'), name: text(a.name, 180, 'Attraction name', true),
-    location: text(a.location, 250, 'Location'), visitTime: text(a.visitTime, 40, 'Visit time'),
+    location: text(a.location, 250, 'Location'), neighborhood: text(a.neighborhood, 180, 'Neighborhood'), visitTime: text(a.visitTime, 40, 'Visit time'),
     notice: list(a.notice || [], 3, 'Things to notice').map(p => text(p, 300, 'Thing to notice', true)),
     comparisons: list(a.comparisons || [], 12, 'Comparisons').map(c => ({attractionId:id(object(c, 'Comparison').attractionId, 'Comparison attraction ID'), paragraphs:list(c.paragraphs, 4, 'Comparison paragraphs').map(p => text(p, 1800, 'Comparison paragraph', true))})),
     history: list(a.history || [], 8, 'History timeline').map(event => {object(event, 'History event');if(!Number.isInteger(event.year) || event.year < -10000 || event.year > 2200)fail('History year must be an integer between -10000 and 2200.');return {year:event.year,label:text(event.label,80,'History date label',true),title:text(event.title,180,'History event title',true),text:text(event.text,1200,'History event text')};}),
@@ -109,23 +109,28 @@ export function normalizeAttraction(value) {
 }
 export function normalizeTrip(value) {
   const t = object(value, 'Trip');
-  if (!Number.isInteger(t.year) || t.year < 1900 || t.year > 2200) fail('Trip year must be between 1900 and 2200.');
-  const result = {id: id(t.id, 'Trip ID'), name: text(t.name, 180, 'Trip name', true), year: t.year, startDate: date(t.startDate, 'Start date', true), endDate: date(t.endDate, 'End date', true), coverUrl: url(t.coverUrl, 'Cover image', true), glossary:list(t.glossary || [], 60, 'Glossary').map(g => ({term:text(object(g, 'Glossary term').term, 80, 'Glossary term', true), definition:text(g.definition, 800, 'Glossary definition', true), aliases:list(g.aliases || [],8,'Glossary aliases').map(alias => text(alias,80,'Glossary alias',true))})), days: []};
+  if (t.guideType != null && !['trip','destination'].includes(t.guideType)) fail('Guide type must be trip or destination.');
+  const destination=t.guideType==='destination';
+  if (!destination && (!Number.isInteger(t.year) || t.year < 1900 || t.year > 2200)) fail('Trip year must be between 1900 and 2200.');
+  const result = {id: id(t.id, 'Trip ID'), name: text(t.name, 180, destination?'Guide name':'Trip name', true), ...(destination?{guideType:'destination'}:{year:t.year,startDate:date(t.startDate, 'Start date', true),endDate:date(t.endDate, 'End date', true)}), coverUrl: url(t.coverUrl, 'Cover image', true), glossary:list(t.glossary || [], 60, 'Glossary').map(g => ({term:text(object(g, 'Glossary term').term, 80, 'Glossary term', true), definition:text(g.definition, 800, 'Glossary definition', true), aliases:list(g.aliases || [],8,'Glossary aliases').map(alias => text(alias,80,'Glossary alias',true))})), days: []};
   const glossaryNames=new Set();for(const g of result.glossary)for(const name of [g.term,...g.aliases]){const key=name.toLocaleLowerCase('en');if(glossaryNames.has(key))fail('Glossary terms and aliases must be unique.');glossaryNames.add(key);}
-  if (result.endDate < result.startDate || Number(result.startDate.slice(0,4)) !== t.year) fail('Trip dates must be in order, and the year must match the start date.');
+  if (!destination && (result.endDate < result.startDate || Number(result.startDate.slice(0,4)) !== t.year)) fail('Trip dates must be in order, and the year must match the start date.');
   const dayIds = new Set(), attrIds = new Set(); let previous = '';
-  for (const d of list(t.days, 120, 'Days')) {
-    object(d, 'Day'); const day = {id:id(d.id, 'Day ID'), date:date(d.date, 'Day date', true), title:text(d.title, 180, 'Day title', true), attractions:[]};
-    if (dayIds.has(day.id) || day.date < previous || day.date < result.startDate || day.date > result.endDate) fail('Days must have unique IDs and chronological dates within the trip.');
+  const groups=destination?(t.places ?? t.days):t.days;
+  for (const d of list(groups, 120, destination?'Places':'Days')) {
+    object(d, destination?'Place':'Day'); const day = {id:id(d.id, destination?'Place ID':'Day ID'), date:destination?'':date(d.date, 'Day date', true), title:text(d.title, 180, destination?'Place name':'Day title', true), attractions:[]};
+    if (dayIds.has(day.id) || (!destination && (day.date < previous || day.date < result.startDate || day.date > result.endDate))) fail(destination?'Places must have unique IDs.':'Days must have unique IDs and chronological dates within the trip.');
     previous = day.date; dayIds.add(day.id);
-    for (const a of list(d.attractions, 100, 'Day attractions')) {
+    for (const a of list(d.attractions, 100, destination?'Place attractions':'Day attractions')) {
       const attraction = normalizeAttraction(a);
-      if (attrIds.has(attraction.id)) fail('Attraction IDs must be unique within a trip.');
+      if (attrIds.has(attraction.id)) fail('Attraction IDs must be unique within a guidebook.');
       attrIds.add(attraction.id); day.attractions.push(attraction);
     }
-    if (!day.attractions.length) fail('Omit days with no attractions.');
+    if (!day.attractions.length) fail(destination?'Omit places with no attractions.':'Omit days with no attractions.');
     result.days.push(day);
   }
+  if(destination&&result.days.some(day=>day.attractions.some(a=>a.comparisons.length)))fail('Destination guides cannot contain attraction comparisons.');
+  if(destination&&result.days.some(day=>day.attractions.some(a=>a.visitTime)))fail('Destination guides use neighborhoods instead of visit times.');
   const visited = new Set();
   for (const day of result.days) for (const a of day.attractions) {
     const compared = new Set();
@@ -136,30 +141,33 @@ export function normalizeTrip(value) {
     }
     visited.add(a.id);
   }
-  if (!result.days.length || attrIds.size > 400) fail('A trip needs between 1 and 400 attractions.');
+  if (!result.days.length || attrIds.size > 400) fail(`${destination?'A destination guide':'A trip'} needs between 1 and 400 attractions.`);
   if (!result.coverUrl) result.coverUrl = result.days[0].attractions[0].photos[0]?.url || '';
   if (t.wildlife != null) result.wildlife=normalizeWildlife(t.wildlife,attrIds);
-  if (bytes(result) > 5 * 1024 * 1024) fail('A trip can contain at most 5 MB of guide text and metadata.');
+  if (bytes(result) > 5 * 1024 * 1024) fail('A guidebook can contain at most 5 MB of guide text and metadata.');
   return result;
 }
 export function parseImport(raw) {
   if (new TextEncoder().encode(raw).length > MAX_FILE) fail('Import files can be at most 12 MB.');
-  let payload; try { payload = JSON.parse(raw); } catch { fail('This is not valid JSON. Import a Glauco trip file prepared from the template.'); }
+  let payload; try { payload = JSON.parse(raw); } catch { fail('This is not valid JSON. Import a Glauco guidebook file prepared from the template.'); }
   rejectUnsafeKeys(payload); object(payload, 'Import file');
-  if (payload.format !== FORMAT || ![1,2,3,4].includes(payload.version)) fail('Use a Glauco trip file with format "glauco-trip-file" and version 1, 2, 3 or 4. Lambus PDFs need to be processed first.');
-  const trips = list(payload.trips, 30, 'Trips').map(normalizeTrip);
-  if (!trips.length || new Set(trips.map(t=>t.id)).size !== trips.length) fail('The file needs trips with unique IDs.');
+  if (payload.format !== FORMAT || ![1,2,3,4,5].includes(payload.version)) fail('Use a Glauco trip file with format "glauco-trip-file" and version 1, 2, 3, 4 or 5. Lambus PDFs need to be processed first.');
+  const rawTrips=list(payload.trips, 30, 'Trips');
+  if(payload.version<5&&rawTrips.some(t=>t?.guideType==='destination'))fail('Destination guides require file version 5.');
+  if(rawTrips.some(t=>t?.guideType==='destination'&&!Array.isArray(t.places)))fail('Destination guides must contain places.');
+  const trips = rawTrips.map(normalizeTrip);
+  if (!trips.length || new Set(trips.map(t=>t.id)).size !== trips.length) fail('The file needs guidebooks with unique IDs.');
   return trips;
 }
 export const attractions = trip => trip.days.flatMap(day => day.attractions.map(attraction => ({day, attraction})));
 export function photoUrls(trip) { return [...new Set([trip.coverUrl, ...[...attractions(trip).map(({attraction:a})=>a),...(trip.wildlife?.species || [])].flatMap(a=>a.photos.flatMap(p=>[p.url,p.thumbnailUrl]))].filter(Boolean))]; }
 export function tripMeta(trip) {
-  return {id:trip.id, name:trip.name, year:trip.year, startDate:trip.startDate, endDate:trip.endDate, coverUrl:trip.coverUrl, glossary:trip.glossary || [], ...(trip.wildlife?{wildlife:{browseByArea:trip.wildlife.browseByArea,areas:trip.wildlife.areas,speciesIds:trip.wildlife.species.map(s=>s.id)}}:{}), days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
+  return {id:trip.id, name:trip.name, ...(trip.guideType==='destination'?{guideType:'destination'}:{year:trip.year,startDate:trip.startDate,endDate:trip.endDate}), coverUrl:trip.coverUrl, glossary:trip.glossary || [], ...(trip.wildlife?{wildlife:{browseByArea:trip.wildlife.browseByArea,areas:trip.wildlife.areas,speciesIds:trip.wildlife.species.map(s=>s.id)}}:{}), days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
 }
 export function hydrateTrip(meta, records, speciesRecords = []) {
   const byId = new Map(records.map(a=>[a.id,a]));
   const speciesById=new Map(speciesRecords.map(a=>[a.id,a]));
-  return normalizeTrip({...meta, ...(meta.wildlife?{wildlife:{browseByArea:meta.wildlife.browseByArea,areas:meta.wildlife.areas,species:meta.wildlife.speciesIds.map(a=>speciesById.get(a)||fail('Synced wildlife is incomplete. Try again when online.'))}}:{}), days:meta.days.map(d=>({...d, attractions:d.attractionIds.map(a=>byId.get(a) || fail('A synced trip is incomplete. Try again when online.'))}))});
+  return normalizeTrip({...meta, ...(meta.wildlife?{wildlife:{browseByArea:meta.wildlife.browseByArea,areas:meta.wildlife.areas,species:meta.wildlife.speciesIds.map(a=>speciesById.get(a)||fail('Synced wildlife is incomplete. Try again when online.'))}}:{}), days:meta.days.map(d=>({...d, attractions:d.attractionIds.map(a=>byId.get(a) || fail('A synced guidebook is incomplete. Try again when online.'))}))});
 }
 export function dateLabel(value, options = {month:'short',day:'numeric',year:'numeric'}) {
   return value ? new Intl.DateTimeFormat('en-US', options).format(new Date(`${value}T12:00:00`)) : '';

@@ -5,7 +5,8 @@ service cloud.firestore {
       return request.auth != null
         && request.auth.uid in [
           '4ct4jQf9cPhbzqiasFT56Mav7Ds1',
-          '12JhGJFUeJf4rf61K6bCTO0WBAQ2'
+          '12JhGJFUeJf4rf61K6bCTO0WBAQ2',
+          'xND2OutlnVO2Wj81riAtoXdIdJc2'
         ];
     }
     match /glauco/shared/{document=**} {

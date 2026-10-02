@@ -3,7 +3,7 @@ import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, bro
 import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, writeBatch, runTransaction, disableNetwork, enableNetwork } from './vendor/firebase/12.18.0/firebase-firestore.js';
 import {config} from './config.js';
 import {attractions,tripMeta,hydrateTrip,uid} from './model.js';
-export const configured=()=>Boolean(config.firebase.apiKey && config.firebase.projectId && config.firebase.authDomain && config.ownerUids.length===2 && new Set(config.ownerUids).size===2 && config.ownerUids.every(u=>u && !u.startsWith('REPLACE_')));
+export const configured=()=>Boolean(config.firebase.apiKey && config.firebase.projectId && config.firebase.authDomain && config.ownerUids.length>0 && new Set(config.ownerUids).size===config.ownerUids.length && config.ownerUids.every(u=>u && !u.startsWith('REPLACE_')));
 export const authorized=user=>Boolean(user && config.ownerUids.includes(user.uid));
 let auth, db;
 export function startAuth(callback) {

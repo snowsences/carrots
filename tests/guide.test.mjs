@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeTrip,tripMeta,normalizeMeta,hydrateTrip} from '../model.js';
+import {normalizeTrip,tripMeta,normalizeMeta,hydrateTrip,parseImport} from '../model.js';
 import {defaultTripId,orderedTrips,todayDay,localDateKey,dayNumber,dayTitle} from '../navigation.js';
 import {guidesForTrip} from '../customs.js';
 const attraction=id=>({id,name:id,location:'Cambodia',summary:['A brief guide.']});
@@ -16,6 +16,14 @@ test('today matches an actual itinerary day, using local calendar fields',()=>{a
 test('country guides match destinations and avoid unrelated narrative mentions',()=>{const f=fixture();assert.deepEqual(guidesForTrip(f).map(g=>g.id),['cambodia','thailand']);const other={name:'Japan',days:[{attractions:[{location:'Kyoto',summary:['Unlike Angkor Wat in Cambodia.']}]}]};assert.deepEqual(guidesForTrip(other),[]);});
 
 test('day numbering follows the guide order without changing source titles',()=>{const trip=fixture(),titles=trip.days.map(d=>d.title);assert.equal(dayNumber(trip,'one'),1);assert.equal(dayNumber(trip,'two'),2);assert.equal(dayTitle(trip,trip.days[1]),'Day 2: Second day');assert.deepEqual(trip.days.map(d=>d.title),titles);});
+
+test('destination guides use places without dates or comparisons and survive cloud hydration',()=>{
+ const source={id:'italy-guide',name:'Italy',guideType:'destination',coverUrl:'',places:[{id:'venice',title:'Venice',attractions:[{id:'basilica',name:'St Mark’s Basilica',location:'Venice',neighborhood:'San Marco',summary:['A landmark church.'],notice:['The mosaics','The domes','The marble floor'],facts:[{label:'Founded',value:'11th century'}],history:[{year:1094,label:'1094 CE',title:'Consecrated',text:'The rebuilt church was consecrated.'}],sections:[{heading:'Look closer',paragraphs:['A detailed guide.']}]}]}]};
+ const trip=parseImport(JSON.stringify({format:'glauco-trip-file',version:5,trips:[source]}))[0],meta={...tripMeta(trip),revision:'rev',archiveRevision:'archive',archived:false};
+ assert.equal(trip.guideType,'destination');assert.equal(trip.year,undefined);assert.equal(trip.days[0].date,'');assert.equal(trip.days[0].attractions[0].neighborhood,'San Marco');assert.equal(dayTitle(trip,trip.days[0]),'Venice');assert.equal(todayDay({meta},'2026-10-02'),null);assert.deepEqual(hydrateTrip(meta,trip.days[0].attractions),trip);assert.deepEqual(normalizeMeta(meta).guideType,'destination');
+ source.places[0].attractions[0].comparisons=[{attractionId:'anything',paragraphs:['No itinerary assumptions.']}];assert.throws(()=>normalizeTrip(source),/cannot contain attraction comparisons/);
+ assert.throws(()=>parseImport(JSON.stringify({format:'glauco-trip-file',version:4,trips:[source]})),/version 5/);
+});
 
 test('Peru customs match trip names and destinations, not narrative references',()=>{
  assert.deepEqual(guidesForTrip({name:'Peru 2027',days:[]}).map(g=>g.id),['peru']);

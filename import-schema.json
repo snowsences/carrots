@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://glauco.local/import-schema-v1",
-  "title": "Glauco trip file",
+  "$id": "https://glauco.local/import-schema-v5",
+  "title": "Glauco guidebook file",
   "type": "object",
   "required": [
     "format",
@@ -17,16 +17,24 @@
         1,
         2,
         3,
-        4
+        4,
+        5
       ],
-      "description": "Use version 4 for new guides with regional wildlife and simplified species entries. Versions 1, 2 and 3 remain accepted."
+      "description": "Use version 5 for destination guides. Existing dated trip files using versions 1 through 4 remain accepted without changes."
     },
     "trips": {
       "type": "array",
       "minItems": 1,
       "maxItems": 30,
       "items": {
-        "$ref": "#/$defs/trip"
+        "oneOf": [
+          {
+            "$ref": "#/$defs/trip"
+          },
+          {
+            "$ref": "#/$defs/destinationGuide"
+          }
+        ]
       }
     }
   },
@@ -271,13 +279,17 @@
             "minLength": 1,
             "maxLength": 1800
           }
+        },
+        "neighborhood": {
+          "type": "string",
+          "maxLength": 180,
+          "description": "Optional neighborhood or district for a destination-guide attraction."
         }
       },
       "required": [
         "id",
         "name",
         "location",
-        "visitTime",
         "summary",
         "facts",
         "sections",
@@ -705,6 +717,80 @@
       "required": [
         "areas",
         "species"
+      ]
+    },
+    "place": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180,
+          "description": "Place name, such as Venice, Florence or Rome."
+        },
+        "attractions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/attraction"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "attractions"
+      ]
+    },
+    "destinationGuide": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 180
+        },
+        "guideType": {
+          "const": "destination"
+        },
+        "coverUrl": {
+          "$ref": "#/$defs/optionalUrl"
+        },
+        "places": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 120,
+          "items": {
+            "$ref": "#/$defs/place"
+          }
+        },
+        "glossary": {
+          "type": "array",
+          "maxItems": 60,
+          "items": {
+            "$ref": "#/$defs/glossaryTerm"
+          }
+        },
+        "wildlife": {
+          "$ref": "#/$defs/wildlife",
+          "description": "Optional offline field guide for the destination."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "guideType",
+        "coverUrl",
+        "places"
       ]
     }
   }

@@ -4,11 +4,11 @@ import {localDateKey} from './navigation.js';
 const PREFIX='glauco-trip-', IMAGE_LIMIT=8*1024*1024, TRIP_LIMIT=300*1024*1024;
 const fatal=message=>Object.assign(new Error(message),{fatal:true});
 
-// Photos in download order: the cover, then days from today onward, then days already past.
-// Within a day the small thumbnails come first so lists look right before the full-size photos arrive.
+// Photos in download order: the cover, then upcoming and past trip days, or destination places in source order.
+// Within each group the small thumbnails come first so lists look right before the full-size photos arrive.
 export function photoPlan(trip,today=localDateKey()) {
   const days=[...trip.days].sort((a,b)=>a.date.localeCompare(b.date));
-  const ordered=[...days.filter(d=>d.date>=today),...days.filter(d=>d.date<today)];
+  const ordered=trip.guideType==='destination'?days:[...days.filter(d=>d.date>=today),...days.filter(d=>d.date<today)];
   const seen=new Set(),plan=[];
   const add=(url,day)=>{if(url&&!seen.has(url)){seen.add(url);plan.push({url,day});}};
   add(trip.coverUrl,0);
@@ -34,7 +34,7 @@ async function fetchImage(url,signal,weak) {
       const response=await fetch(url,{mode:'cors',credentials:'omit',signal:control.signal,cache:'no-cache'});
       if(response.status>=500||response.status===429)throw new Error(`Server busy (${response.status})`);
       if(!response.ok || !/^image\/(jpeg|png|webp|avif|gif)/i.test(response.headers.get('content-type')||''))throw fatal('An image could not be downloaded. Check the image URL and that its host permits browser downloads.');
-      const tooBig=()=>fatal('An image is larger than 8 MB. Use a smaller image URL in the trip file.');
+      const tooBig=()=>fatal('An image is larger than 8 MB. Use a smaller image URL in the guidebook file.');
       if(Number(response.headers.get('content-length'))>IMAGE_LIMIT)throw tooBig();
       const reader=response.body.getReader(),chunks=[];let length=0;
       try{while(true){const {value,done}=await reader.read();if(done)break;length+=value.byteLength;if(length>IMAGE_LIMIT){await reader.cancel();throw tooBig();}chunks.push(value);}}finally{reader.releaseLock();}
