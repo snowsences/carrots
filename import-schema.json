@@ -284,6 +284,11 @@
           "type": "string",
           "maxLength": 180,
           "description": "Optional neighborhood or district for a destination-guide attraction."
+        },
+        "category": {
+          "type": "string",
+          "enum": ["attraction", "dining", "neighborhood"],
+          "description": "Optional category for Place browsing tabs. Defaults to attraction for existing files."
         }
       },
       "required": [

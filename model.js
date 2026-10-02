@@ -82,8 +82,10 @@ function normalizeWildlife(value,attractionIds) {
 
 export function normalizeAttraction(value) {
   const a = object(value, 'Attraction');
+  if(a.category !== undefined && !['attraction','dining','neighborhood'].includes(a.category)) fail('Attraction category must be attraction, dining or neighborhood.');
   const result = {
     id: id(a.id, 'Attraction ID'), name: text(a.name, 180, 'Attraction name', true),
+    category: a.category || 'attraction',
     location: text(a.location, 250, 'Location'), neighborhood: text(a.neighborhood, 180, 'Neighborhood'), visitTime: text(a.visitTime, 40, 'Visit time'),
     notice: list(a.notice || [], 3, 'Things to notice').map(p => text(p, 300, 'Thing to notice', true)),
     comparisons: list(a.comparisons || [], 12, 'Comparisons').map(c => ({attractionId:id(object(c, 'Comparison').attractionId, 'Comparison attraction ID'), paragraphs:list(c.paragraphs, 4, 'Comparison paragraphs').map(p => text(p, 1800, 'Comparison paragraph', true))})),
