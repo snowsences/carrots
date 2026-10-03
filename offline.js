@@ -4,14 +4,14 @@ import {localDateKey} from './navigation.js';
 const PREFIX='glauco-trip-', IMAGE_LIMIT=8*1024*1024, TRIP_LIMIT=300*1024*1024;
 const fatal=message=>Object.assign(new Error(message),{fatal:true});
 
-// Photos in download order: the cover, then upcoming and past trip days, or destination places in source order.
+// Photos in download order: the header and cover, then upcoming and past trip days, or destination places in source order.
 // Within each group the small thumbnails come first so lists look right before the full-size photos arrive.
 export function photoPlan(trip,today=localDateKey()) {
   const days=[...trip.days].sort((a,b)=>a.date.localeCompare(b.date));
   const ordered=trip.guideType==='destination'?days:[...days.filter(d=>d.date>=today),...days.filter(d=>d.date<today)];
   const seen=new Set(),plan=[];
   const add=(url,day)=>{if(url&&!seen.has(url)){seen.add(url);plan.push({url,day});}};
-  add(trip.coverUrl,0);
+  add(trip.headerUrl,0);add(trip.coverUrl,0);
   for(const day of ordered){const number=trip.days.indexOf(day)+1,photos=day.attractions.flatMap(a=>a.photos);for(const p of photos)add(p.thumbnailUrl,number);for(const p of photos)add(p.url,number);}
   const wildlife=trip.wildlife?.species || [];
   for(const s of wildlife)for(const p of s.photos)add(p.thumbnailUrl,0);

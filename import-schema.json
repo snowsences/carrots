@@ -361,6 +361,10 @@
         "coverUrl": {
           "$ref": "#/$defs/optionalUrl"
         },
+        "headerUrl": {
+          "$ref": "#/$defs/optionalUrl",
+          "description": "Optional dedicated image for the fixed Trip Details header. Existing trip files can omit it."
+        },
         "days": {
           "type": "array",
           "maxItems": 120,

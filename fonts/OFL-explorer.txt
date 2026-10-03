@@ -1,1 +1,0 @@
-Explorer style fonts: IM Fell English (SIL OFL 1.1, Igino Marini), Crimson Pro (SIL OFL 1.1, Jacques Le Bailly and contributors), Special Elite (Apache License 2.0, Astigmatic). Obtained from Google Fonts.
