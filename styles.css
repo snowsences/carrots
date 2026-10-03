@@ -134,6 +134,7 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
  body.trip-detail-view .app{padding:0 16px calc(108px + env(safe-area-inset-bottom))}
  .trip-hero{margin:0 0 16px calc(50% - 50vw)}
  .trip-hero-image{height:auto;max-height:320px;object-fit:contain;object-position:top center}
+ .trip-hero-image-cover{width:100vw;height:320px;max-height:320px;object-fit:cover;object-position:center}
  .trip-hero::after{background:linear-gradient(to top,var(--bg) 0%,transparent 100%)}
  .trip-hero-copy{left:32px;right:24px}
  .trip-controls .search-wrap{padding-inline:10px}
