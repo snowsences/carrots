@@ -46,8 +46,8 @@
 .photo-navigation{display:flex;justify-content:center;gap:24px;flex:none;padding:8px calc(16px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
 .photo-dialog .icon-button{background:#202020;color:#fff;border:0;box-shadow:0px 1px 3px 0px rgba(0,0,0,0.35)}
 .photo-prev,.photo-next{font-size:32px}
-.photo-close{margin-left:auto}.photo-replace{display:none}.photo-override-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-12px 0 24px}.photo-override-actions .small{margin:0}.photo-drop-active{position:relative;outline:3px solid var(--link);outline-offset:-3px}.photo-drop-active::after{content:"Drop to replace";position:absolute;z-index:5;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.58);color:#fff;font-weight:500;pointer-events:none}
-@media(max-width:680px){.photo-replace{display:inline-flex;width:38px;height:38px}.photo-replace svg{width:20px;height:20px}.photo-override-actions{padding-inline:4px}}
+.photo-close{margin-left:auto}.photo-replace{display:none}.photo-drop-active{position:relative;outline:3px solid var(--link);outline-offset:-3px}.photo-drop-active::after{content:"Drop to replace";position:absolute;z-index:5;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.58);color:#fff;font-weight:500;pointer-events:none}
+@media(max-width:680px){.photo-replace{display:inline-flex;width:38px;height:38px}.photo-replace svg{width:20px;height:20px}}
 
 :root:not([data-theme=light]) body.attraction-view{--bg:var(--attraction-bg,#0d0d0d)}
 :root[data-theme=light] body.attraction-view{--bg:#fff}
@@ -99,7 +99,7 @@ a.history-site{text-decoration:none}a.history-site:hover{text-decoration:underli
 /* Editorial guide layout */
 h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:auto}
 :root[data-theme=light] :is(.trip-card,.panel,.day-card,.attraction-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog){background:#fffaf5}
-:root[data-theme=light] :is(.trip-card,.panel,.day-card,.attraction-card){border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+:root[data-theme=light] :is(.trip-card,.panel,.day-card,.attraction-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,.search-wrap,.segmented,.today-shortcut,.notice-checklist,.originality-section,.photo-tile){border:0;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.25)}
 :root[data-theme=light] body.attraction-view{--bg:#ffebd8}
 
 .trip-hero{position:relative;width:100vw;height:320px;margin:-28px 0 16px calc(50% - 50vw);overflow:visible}
@@ -128,6 +128,11 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 .trip-day-card .thumb-viewport{flex:none;height:87px;margin:0 4px;overflow:hidden}
 .trip-day-card .thumb-strip{height:83px;gap:2px;padding:8px 0 0;overflow-x:auto;overflow-y:hidden}
 .trip-day-card .thumbnail{width:75px;height:75px;border-radius:2px}
+
+/* Editorial metadata repeats the regular Playfair treatment used for the trip date. */
+:is(.editorial-meta,.article>.eyebrow,.article-location,.fact dt,.history-site,.attraction-body p){font:400 16px/1.35 Playfair,Georgia,serif;letter-spacing:0;text-transform:none;font-optical-sizing:auto;font-synthesis:none}
+.attraction-body p{color:#eee}
+.glossary-term dt{font:800 18px/1.25 Playfair,Georgia,serif;letter-spacing:0;font-optical-sizing:auto;font-synthesis:none}
 
 @media(max-width:900px){.trip-hero{margin-top:-24px}}
 @media(max-width:680px){
