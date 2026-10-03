@@ -11,6 +11,13 @@
 .wildlife-place-links{display:flex;gap:12px 20px;flex-wrap:wrap}.local-likelihood{margin-bottom:10px}
 @media(min-width:700px){.wildlife-landing{grid-template-columns:repeat(2,minmax(0,1fr))}.wildlife-landing .attraction-link{min-height:320px}}
 @media(max-width:699px){.wildlife-landing{grid-template-columns:1fr}.wildlife-landing .attraction-link{min-height:220px}}
+@media(max-width:680px){
+ body.wildlife-pair-view{overflow:hidden}
+ body.wildlife-pair-view .app{height:100dvh;min-height:0;padding:env(safe-area-inset-top,0px) 0 var(--tabbar-height)}
+ .wildlife-landing-pair{display:grid;height:100%;min-height:0;margin:0;grid-template-columns:1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:0}
+ .wildlife-landing-pair .wildlife-category{min-height:0;border-radius:0!important;box-shadow:none!important}
+ .wildlife-landing-pair .attraction-link,.wildlife-landing-pair .attraction-body{height:100%;min-height:0;aspect-ratio:auto}
+}
 /* Identification photos keep the whole subject visible, including tails and roots. */
 .wildlife-detail .photo-tile{height:auto}
 .wildlife-detail .photo-tile img{height:auto;max-height:65vh;object-fit:contain}

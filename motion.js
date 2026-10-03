@@ -142,6 +142,18 @@ export function initMiniTitle(main) {
   watch();
 }
 
+// Full-bleed photo cards move gently behind their stationary text while scrolling.
+export function initPhotoParallax(main) {
+  const phone=matchMedia('(max-width: 680px)'),watched=new WeakSet(),active=new Set();
+  const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting)active.add(entry.target);else active.delete(entry.target);}schedule();},{rootMargin:'20% 0px'});
+  const scan=()=>{for(const image of main.querySelectorAll('.attraction-card .attraction-link>img'))if(!watched.has(image)){watched.add(image);image.classList.add('parallax-photo');observer.observe(image);}};
+  let queued=false;
+  function update(){queued=false;for(const image of [...active]){if(!image.isConnected){active.delete(image);continue;}const card=image.closest('.attraction-card'),rect=card?.getBoundingClientRect();if(!phone.matches||reduce.matches||!rect||rect.left>1||rect.right<innerWidth-1){image.style.removeProperty('--parallax-y');continue;}const range=(innerHeight+rect.height)/2,progress=Math.max(-1,Math.min(1,(innerHeight/2-(rect.top+rect.height/2))/range));image.style.setProperty('--parallax-y',`${(progress*18).toFixed(2)}px`);}}
+  function schedule(){if(queued)return;queued=true;requestAnimationFrame(update);}
+  new MutationObserver(()=>{scan();schedule();}).observe(main,{childList:true,subtree:true});
+  addEventListener('scroll',schedule,{passive:true});addEventListener('resize',schedule);phone.addEventListener?.('change',schedule);reduce.addEventListener?.('change',schedule);scan();
+}
+
 // Open the glossary dialog from the word that was tapped (wide screens).
 export function initGlossaryOrigin(dialog) {
   document.addEventListener('pointerdown', e => {

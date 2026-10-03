@@ -17,15 +17,15 @@ export function renderWildlifeView(entry,trip,route,ui) {
   const card=(s,href)=>h('article',{class:'attraction-card wildlife-card'},link([image(s.photos[0]?.thumbnailUrl || s.photos[0]?.url,'',s.photos.length?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},s.name),h('p',{},h('i',{},s.scientificName)))],href,{class:'attraction-link'}));
   if(!labels[kind] && !region){
     if(wildlife.browseByArea){
-      main.replaceChildren(h('div',{class:'wildlife-landing attraction-grid'},...wildlife.areas.map(area=>{
+      const cards=wildlife.areas.map(area=>{
         const entries=all.filter(s=>s.areaIds.includes(area.id)),sample=entries.find(s=>s.photos.length);
         return h('article',{class:'attraction-card wildlife-category'},link([image(sample?.photos[0]?.url,'',sample?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},area.name),h('p',{},area.description))],wildlifeHref(entry.id,`region-${area.id}`),{class:'attraction-link'}));
-      })));return;
+      });if(cards.length===2)document.body.classList.add('wildlife-pair-view');main.replaceChildren(h('div',{class:`wildlife-landing attraction-grid${cards.length===2?' wildlife-landing-pair':''}`},...cards));return;
     }
-    main.replaceChildren(h('div',{class:'wildlife-landing attraction-grid'},...['fauna','flora'].map(k=>{
+    const cards=['fauna','flora'].map(k=>{
       const species=all.filter(s=>s.kind===k),sample=species.find(s=>s.photos.length);
       return h('article',{class:'attraction-card wildlife-category'},link([image(sample?.photos[0]?.url,'',sample?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},labels[k]),h('p',{},k==='fauna'?'Animals to look for':'Plants to look for'))],wildlifeHref(entry.id,k),{class:'attraction-link'}));
-    })));
+    });document.body.classList.add('wildlife-pair-view');main.replaceChildren(h('div',{class:'wildlife-landing wildlife-landing-pair attraction-grid'},...cards));
     return;
   }
   const sectionHref=wildlifeHref(entry.id,kind),species=all.filter(s=>region?s.areaIds.includes(region.id):s.kind===kind);
