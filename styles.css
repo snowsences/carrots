@@ -152,6 +152,8 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 /* Trip-specific palettes remain active across every screen for the selected guide. */
 :root[data-trip-palette=peru]{--bg:#061c00;--ink:#fff;--muted:#fff;--link:#fff}
 :root[data-trip-palette=peru] body.attraction-view{--bg:#061c00}
+:root[data-trip-palette=italy]{--bg:#270f0d;--ink:#fff;--muted:#fff;--link:#fff}
+:root[data-trip-palette=italy] body.attraction-view{--bg:#270f0d}
 :root[data-trip-palette=cambodia] .trip-hero-image{object-position:left center}
 :root[data-theme=light][data-trip-palette=peru]{
  --bg:#061c00;--surface:#fff;--raised:#edf2eb;--ink:#fff;--muted:#c4d0c1;--line:rgba(255,255,255,.22);
@@ -166,3 +168,16 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 :root[data-theme=light][data-trip-palette=peru] .trip-selector::after{background:#061c00}
 :root[data-theme=light][data-trip-palette=peru] .trip-hero-copy{color:#fff}
 :root[data-theme=light][data-trip-palette=peru] .photo-dialog{background:#000;color:#fff}
+:root[data-theme=light][data-trip-palette=italy]{
+ --bg:#270f0d;--surface:#fff;--raised:#f2eceb;--ink:#fff;--muted:#d5c5c3;--line:rgba(255,255,255,.22);
+ --accent:#fff;--accent-ink:#270f0d;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.13);
+ --shadow:0 1px 2px rgba(0,0,0,.32);--button-shadow:0 1px 3px rgba(0,0,0,.24)
+}
+:root[data-theme=light][data-trip-palette=italy] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-selector select,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
+ --surface:#fff;--raised:#f2eceb;--ink:#270f0d;--muted:#66504e;--line:rgba(39,15,13,.16);
+ --accent:#270f0d;--accent-ink:#fff;--link:#6b2e29;--focus:#270f0d;--soft:#efe4e3;
+ color:var(--ink);background:#fff
+}
+:root[data-theme=light][data-trip-palette=italy] .trip-selector::after{background:#270f0d}
+:root[data-theme=light][data-trip-palette=italy] .trip-hero-copy{color:#fff}
+:root[data-theme=light][data-trip-palette=italy] .photo-dialog{background:#000;color:#fff}
