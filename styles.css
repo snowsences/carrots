@@ -149,6 +149,7 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 /* Trip-specific palettes remain active across every screen for the selected guide. */
 :root[data-trip-palette=peru]{--bg:#061c00;--ink:#fff;--muted:#fff;--link:#fff}
 :root[data-trip-palette=peru] body.attraction-view{--bg:#061c00}
+:root[data-trip-palette=cambodia] .trip-hero-image{object-position:left center}
 :root[data-theme=light][data-trip-palette=peru]{
  --bg:#061c00;--surface:#fff;--raised:#edf2eb;--ink:#fff;--muted:#c4d0c1;--line:rgba(255,255,255,.22);
  --accent:#fff;--accent-ink:#061c00;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.13);
