@@ -133,7 +133,7 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
  body.trip-detail-view::before{content:"";position:fixed;z-index:29;top:0;left:0;right:0;height:calc(env(safe-area-inset-top) + 5px);background-color:var(--bg);background-image:var(--trip-header-image);background-position:top center;background-repeat:no-repeat;background-size:100vw auto;pointer-events:none;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 5px),transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 5px),transparent 100%)}
  body.trip-detail-view .app{padding:0 16px calc(108px + env(safe-area-inset-bottom))}
  .trip-hero{margin:0 0 16px calc(50% - 50vw)}
- .trip-hero-image{height:auto;max-height:320px;object-fit:contain;object-position:top center}
+ .trip-hero-image{width:100vw;height:320px;max-height:320px;object-fit:cover;object-position:center}
  .trip-hero-image-cover{width:100vw;height:320px;max-height:320px;object-fit:cover;object-position:center}
  .trip-hero::after{background:linear-gradient(to top,var(--bg) 0%,transparent 100%)}
  .trip-hero-copy{left:32px;right:24px}
@@ -145,3 +145,20 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
  .attraction-card .attraction-link{min-height:0;aspect-ratio:358/260;border-radius:0}
  .attraction-card .attraction-body{min-height:100%;height:100%}
 }
+
+/* Trip-specific palettes remain active across every screen for the selected guide. */
+:root[data-trip-palette=peru]{--bg:#061c00;--ink:#fff;--muted:#fff;--link:#fff}
+:root[data-trip-palette=peru] body.attraction-view{--bg:#061c00}
+:root[data-theme=light][data-trip-palette=peru]{
+ --bg:#061c00;--surface:#fff;--raised:#edf2eb;--ink:#fff;--muted:#c4d0c1;--line:rgba(255,255,255,.22);
+ --accent:#fff;--accent-ink:#061c00;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.13);
+ --shadow:0 1px 2px rgba(0,0,0,.32);--button-shadow:0 1px 3px rgba(0,0,0,.24)
+}
+:root[data-theme=light][data-trip-palette=peru] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-selector select,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
+ --surface:#fff;--raised:#edf2eb;--ink:#061c00;--muted:#52634e;--line:rgba(6,28,0,.16);
+ --accent:#061c00;--accent-ink:#fff;--link:#214d18;--focus:#061c00;--soft:#e6eee3;
+ color:var(--ink);background:#fff
+}
+:root[data-theme=light][data-trip-palette=peru] .trip-selector::after{background:#061c00}
+:root[data-theme=light][data-trip-palette=peru] .trip-hero-copy{color:#fff}
+:root[data-theme=light][data-trip-palette=peru] .photo-dialog{background:#060606;color:#fff}
