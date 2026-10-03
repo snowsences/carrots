@@ -10,6 +10,10 @@ export const config = Object.freeze({
   },
   // Authorized members. UIDs come from this project's Authentication → Users.
   ownerUids: ['4ct4jQf9cPhbzqiasFT56Mav7Ds1', '12JhGJFUeJf4rf61K6bCTO0WBAQ2', 'xND2OutlnVO2Wj81riAtoXdIdJc2'],
+  cloudinary: {
+    cloudName: 'myranker',
+    workerUrl: 'https://travel-guide.allenkevinc.workers.dev/',
+  },
   // Wikimedia and iNaturalist open-data images are supported. Keep this list and the index.html CSP in agreement.
   imageHosts: ['upload.wikimedia.org', 'thumb.wikimedia.org', 'res.cloudinary.com', 'inaturalist-open-data.s3.amazonaws.com'],
 });

@@ -13,9 +13,14 @@ export function startAuth(callback) {
 }
 export function login(){const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});return signInWithPopup(auth,provider);}
 export const logout=()=>signOut(auth);
+export const authToken=()=>auth.currentUser?.getIdToken()||Promise.reject(new Error('Sign in again before uploading.'));
 const tripsRef=()=>collection(db,'glauco','shared','trips');
+const overridesRef=()=>collection(db,'glauco','shared','photoOverrides');
 const tripRef=id=>doc(tripsRef(),id);
 export function listen(callback,error){return onSnapshot(tripsRef(),s=>callback(s.docs.map(d=>d.data())),error);}
+export function listenPhotoOverrides(callback,error){return onSnapshot(overridesRef(),s=>callback(s.docs.map(d=>d.data())),error);}
+export async function savePhotoOverride(value){const batch=writeBatch(db);batch.set(doc(overridesRef(),value.id),value);await batch.commit();}
+export async function deletePhotoOverride(id){const batch=writeBatch(db);batch.delete(doc(overridesRef(),id));await batch.commit();}
 export async function readRemote(meta) {const base=tripRef(meta.id);const [snap,wildlife]=await Promise.all([getDocs(collection(base,'versions',meta.revision,'attractions')),meta.wildlife?.speciesIds.length?getDocs(collection(base,'versions',meta.revision,'species')):Promise.resolve({docs:[]})]);return hydrateTrip(meta,snap.docs.map(d=>d.data()),wildlife.docs.map(d=>d.data()));}
 export async function saveImport(entry, expectedRevision, isCancelled=()=>false) {
   const reference=tripRef(entry.id), revision=entry.revision;

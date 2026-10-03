@@ -48,9 +48,9 @@ async function fetchImage(url,signal,weak) {
   throw Object.assign(new Error('The connection was too slow or was interrupted.'),{network:true,cause:last});
 }
 // A download that loses its connection after some photos keeps them and is saved as partial, so it can continue later.
-export async function downloadTrip(entry,progress,signal,{resume=null,today=localDateKey()}={}) {
+export async function downloadTrip(entry,progress,signal,{resume=null,today=localDateKey(),photoRevision=0}={}) {
   const plan=photoPlan(entry.trip,today),weak=weakConnection();
-  const reuse=Boolean(resume?.cacheName&&resume.revision===entry.revision&&await caches.has(resume.cacheName));
+  const reuse=Boolean(resume?.cacheName&&resume.revision===entry.revision&&(resume.photoRevision||0)===photoRevision&&await caches.has(resume.cacheName));
   const cacheName=reuse?resume.cacheName:`${PREFIX}${entry.id}-${uid()}`;
   const cache=await caches.open(cacheName);let imageBytes=0,saved=0,interrupted=false;
   try {
@@ -68,7 +68,7 @@ export async function downloadTrip(entry,progress,signal,{resume=null,today=loca
     }
     signal.throwIfAborted();
     const previous=(await all('downloads')).find(d=>d.id===entry.id);
-    const download={id:entry.id,name:entry.meta.name,revision:entry.revision,cacheName,bytes:imageBytes+bytes(entry.trip),imageBytes,imageCount:saved,photoTotal:plan.length,partial:interrupted,downloadedAt:Date.now(),trip:entry.trip};
+    const download={id:entry.id,name:entry.meta.name,revision:entry.revision,photoRevision,cacheName,bytes:imageBytes+bytes(entry.trip),imageBytes,imageCount:saved,photoTotal:plan.length,partial:interrupted,downloadedAt:Date.now(),trip:entry.trip};
     await put('downloads',download);
     if(previous?.cacheName&&previous.cacheName!==cacheName)await caches.delete(previous.cacheName);
     progress({completed:saved,total:plan.length,bytes:download.bytes,done:true,partial:interrupted});
