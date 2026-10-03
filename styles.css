@@ -13,7 +13,7 @@
 
 :root:not([data-theme=light]) :is(.trip-link h2,.result h3){color:var(--link);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}:root:not([data-theme=light]) .article-navigation a,:root:not([data-theme=light]) .article-navigation a:hover{color:var(--link);text-decoration:underline}
 
-:root[data-theme=light] .button.primary:hover{background:var(--accent);filter:brightness(1.05)}:root[data-theme=light] .back-link{color:var(--muted);text-decoration:none}:root[data-theme=light] .photo-dialog{background:#071719}:root[data-theme=light] .photo-credit{color:#b7cfcb}:root[data-theme=light] dialog::backdrop{background:rgba(0,12,13,.72)}:root[data-theme=light] a.button:not(.primary){color:var(--link)}
+:root[data-theme=light] .button.primary:hover{background:var(--accent);filter:brightness(1.05)}:root[data-theme=light] .back-link{color:var(--muted);text-decoration:none}:root[data-theme=light] .photo-dialog{background:#000}:root[data-theme=light] .photo-credit{color:#b7cfcb}:root[data-theme=light] dialog::backdrop{background:rgba(0,12,13,.72)}:root[data-theme=light] a.button:not(.primary){color:var(--link)}
 
 .trips-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}.trips-toolbar .segmented{margin-bottom:0}.page-heading>div:first-child{flex:1;min-width:0}.day-heading h2,.attraction-link h2{text-decoration:none}.day-heading>div{min-width:0}
 :root:not([data-theme=light]) :is(.trip-card,.panel,.day-card,.attraction-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog){border-color:transparent;box-shadow:var(--shadow)}:root:not([data-theme=light]) :is(.button,.icon-button,.segmented){border-color:transparent}:root:not([data-theme=light]) :is(.button,.icon-button){box-shadow:var(--button-shadow)}:root:not([data-theme=light]) .segmented{box-shadow:var(--shadow)}:root:not([data-theme=light]) .button.ghost{background:var(--soft)}:root:not([data-theme=light]) .button.ghost:hover{background:var(--raised)}:root:not([data-theme=light]) .trip-footer{border-top-color:transparent}:root:not([data-theme=light]) :is(.day-card,.trip-card,.attraction-card):hover{border-color:transparent}:root:not([data-theme=light]) .segmented button.active{box-shadow:var(--button-shadow)}
@@ -38,10 +38,10 @@
 .search-wrap input::-webkit-search-cancel-button{-webkit-appearance:none}.attraction-card{border:0}.attraction-link{position:relative;min-height:280px;height:100%;overflow:hidden;border-radius:inherit}.attraction-card .attraction-link>img,.attraction-card .attraction-link>.placeholder{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.attraction-body{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:280px;height:100%;padding:54px 20px 20px;background:linear-gradient(to top,rgba(0,0,0,.46),rgba(0,0,0,.29) 38%,rgba(0,0,0,0) 80%);color:#fff}.attraction-body h2{color:#fff;line-height:1.25;overflow-wrap:anywhere;text-shadow:0 1px 3px rgba(0,0,0,.8)}.attraction-body p{color:#eee;overflow-wrap:anywhere}.photo-tile img{height:360px;border-radius:inherit}.photo-tile{height:360px;min-width:85%;flex:0 0 85%;box-shadow:var(--shadow)}.photo-tile:only-child{flex-basis:100%}.photo-gallery{border-radius:8px;align-items:stretch;padding-bottom:0}.button.danger{color:var(--danger)}@media(max-width:680px){.attraction-link,.attraction-body{min-height:260px}.attraction-body{padding:50px 18px 18px}.photo-tile,.photo-tile img{height:250px}}
 
 /* Full-screen photo viewer keeps the image proportions and controls separate. */
-.photo-dialog{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:#060606;color:#fff;overflow:hidden}
+.photo-dialog{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:#000;color:#fff;overflow:hidden}
 .photo-inner{display:flex;flex-direction:column;width:100%;height:100%;min-height:0}
 .photo-header{display:flex;justify-content:flex-end;flex:none;padding:calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 8px 8px}
-.photo-stage{flex:1;min-height:0;overflow:auto;display:grid;align-items:center;overscroll-behavior:contain}
+.photo-stage{flex:1;min-height:0;overflow:auto;display:grid;align-items:center;overscroll-behavior:contain;background:#000}
 .photo-stage img{display:block;width:100%;height:auto;max-width:none;max-height:none}
 .photo-navigation{display:flex;justify-content:center;gap:24px;flex:none;padding:8px calc(16px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
 .photo-dialog .icon-button{background:#202020;color:#fff;border:0;box-shadow:0px 1px 3px 0px rgba(0,0,0,0.35)}
@@ -164,4 +164,4 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 }
 :root[data-theme=light][data-trip-palette=peru] .trip-selector::after{background:#061c00}
 :root[data-theme=light][data-trip-palette=peru] .trip-hero-copy{color:#fff}
-:root[data-theme=light][data-trip-palette=peru] .photo-dialog{background:#060606;color:#fff}
+:root[data-theme=light][data-trip-palette=peru] .photo-dialog{background:#000;color:#fff}
