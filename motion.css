@@ -17,11 +17,10 @@
 }
 
 /* ---- tab bar ---- */
-.main-nav{position:relative}
+.main-nav{position:fixed}
 .nav-tab{position:relative;z-index:1}
 .nav-pill{position:absolute;left:0;top:0;z-index:0;border-radius:10px;background:color-mix(in srgb,var(--ink) 14%,transparent);pointer-events:none;view-transition-name:pill}
 .main-nav.has-pill .nav-tab.active{background:transparent}
-@media(max-width:680px){.main-nav{position:fixed}}
 @media(prefers-reduced-motion:no-preference){
  ::view-transition-group(pill){animation-duration:.3s;animation-timing-function:cubic-bezier(.2,0,0,1)}
  .nav-tab.active .nav-icon{animation:tab-pop .38s cubic-bezier(.3,1.6,.5,1)}
@@ -71,6 +70,7 @@
 
 /* ---- scroll-linked touches ---- */
 .parallax-photo{--parallax-y:0px;transform:translate3d(0,var(--parallax-y),0) scale(1.08);transform-origin:center;will-change:transform}
+@media(max-width:680px){.attraction-card .attraction-link>img.parallax-photo{inset:-54px 0 auto;height:calc(100% + 108px)}}
 @media(prefers-reduced-motion:reduce){.parallax-photo{transform:none;will-change:auto}}
 .mini-title{position:fixed;z-index:35;top:0;left:0;right:0;height:calc(44px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 16px 0;border:0;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);color:var(--ink);font:500 17px/44px Figtree,'Noto Sans Thai','Noto Sans Khmer',sans-serif;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);transform:translateY(-100%);visibility:hidden}
 .mini-title.show{transform:none;visibility:visible}
