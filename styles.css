@@ -102,7 +102,7 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 
 .trip-hero{position:relative;width:100vw;height:320px;margin:-28px 0 16px calc(50% - 50vw);overflow:visible}
 .trip-hero-image{position:fixed;z-index:0;top:0;left:0;width:100vw;height:320px;object-fit:cover;object-position:center;display:block;pointer-events:none}
-.trip-hero::after{content:"";position:fixed;z-index:0;top:0;left:0;width:100vw;height:320px;background:linear-gradient(to bottom,transparent 0%,var(--bg) 100%);pointer-events:none}
+.trip-hero::after{content:"";position:fixed;z-index:0;top:0;left:0;width:100vw;height:320px;background:linear-gradient(to top,var(--bg) 0%,transparent 100%);pointer-events:none}
 .trip-hero-copy{position:absolute;z-index:1;left:32px;right:24px;bottom:24px;color:var(--ink)}
 .trip-hero-copy h1{margin:0 0 4px;font:italic 800 36px/35px Playfair,Georgia,serif;letter-spacing:0;color:inherit;font-optical-sizing:auto;font-synthesis:none}
 .trip-hero-copy p{margin:0;font:400 16px/1.35 Playfair,Georgia,serif;color:inherit;font-optical-sizing:auto}
@@ -129,12 +129,12 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 @media(max-width:900px){.trip-hero{margin-top:-24px}}
 @media(max-width:680px){
  body:not(.settings-view) .top-header{padding-top:0;padding-bottom:0;gap:0}
- body.trip-detail-view{background-color:var(--bg);background-image:var(--trip-header-image);background-position:top center;background-repeat:no-repeat;background-size:100vw auto}
+ body.trip-detail-view{background-color:var(--bg)}
  body.trip-detail-view::before{content:"";position:fixed;z-index:29;top:0;left:0;right:0;height:calc(env(safe-area-inset-top) + 5px);background-color:var(--bg);background-image:var(--trip-header-image);background-position:top center;background-repeat:no-repeat;background-size:100vw auto;pointer-events:none;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 5px),transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 calc(100% - 5px),transparent 100%)}
  body.trip-detail-view .app{padding:0 16px calc(108px + env(safe-area-inset-bottom))}
  .trip-hero{margin:0 0 16px calc(50% - 50vw)}
- .trip-hero-image{height:auto;max-height:none;object-fit:contain;object-position:top center}
- .trip-hero::after{background:linear-gradient(to bottom,transparent 0%,var(--bg) 62%,var(--bg) 100%)}
+ .trip-hero-image{height:auto;max-height:320px;object-fit:contain;object-position:top center}
+ .trip-hero::after{background:linear-gradient(to top,var(--bg) 0%,transparent 100%)}
  .trip-hero-copy{left:32px;right:24px}
  .trip-controls .search-wrap{padding-inline:10px}
  .trip-controls .view-tabs{padding:3px;gap:2px}
