@@ -48,6 +48,16 @@
       "type": "string",
       "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,99}$"
     },
+    "guideTabs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["trip", "customs", "wildlife"]
+      },
+      "description": "Optional visible main tabs. Settings is always available and the app keeps its standard tab order. Omit for guide-type defaults."
+    },
     "date": {
       "type": "string",
       "format": "date",
@@ -364,6 +374,9 @@
         },
         "coverUrl": {
           "$ref": "#/$defs/optionalUrl"
+        },
+        "tabs": {
+          "$ref": "#/$defs/guideTabs"
         },
         "headerUrl": {
           "$ref": "#/$defs/optionalUrl",
@@ -855,6 +868,7 @@
         "guideType": { "const": "wildlife" },
         "coverUrl": { "$ref": "#/$defs/optionalUrl" },
         "headerUrl": { "$ref": "#/$defs/optionalUrl" },
+        "tabs": { "$ref": "#/$defs/guideTabs" },
         "glossary": {
           "type": "array",
           "maxItems": 60,
@@ -881,6 +895,9 @@
         },
         "coverUrl": {
           "$ref": "#/$defs/optionalUrl"
+        },
+        "tabs": {
+          "$ref": "#/$defs/guideTabs"
         },
         "places": {
           "type": "array",

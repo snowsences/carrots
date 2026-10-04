@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeTrip,normalizeMeta,parseImport,tripMeta,hydrateTrip,photoUrls} from '../model.js';
+import {normalizeTrip,normalizeMeta,parseImport,tripMeta,hydrateTrip,photoUrls,guideTabs} from '../model.js';
 import {photoPlan} from '../offline.js';
 import {speciesMatches,wildlifeModes} from '../wildlife.js';
 const species=()=>({id:'macaque',kind:'fauna',name:'Long-tailed macaque',scientificName:'Macaca fascicularis',group:'Mammals',aliases:['Crab-eating macaque'],identification:['A long tail.'],summary:['A social primate.'],where:[{areaId:'forest',likelihood:'Reported here.',note:'Look along the edge.',attractionIds:['temple']}],sources:[{title:'Research',url:'https://example.org/research'}],researchedAt:'2026-10-01',photos:[{url:'https://upload.wikimedia.org/full.jpg',thumbnailUrl:'https://upload.wikimedia.org/thumb.jpg'}]});
@@ -65,4 +65,13 @@ test('tracking views belong to guides, while dated trips stay guide-only',()=>{
  assert.deepEqual(wildlifeModes({}),['guide']);
  assert.deepEqual(wildlifeModes({guideType:'destination'}),['guide','seen','outings']);
  assert.deepEqual(wildlifeModes({guideType:'wildlife'}),['guide','seen','outings']);
+});
+
+test('main tabs have compatible defaults and support explicit guide choices',()=>{
+ const trip=normalizeTrip(fixture());assert.deepEqual(guideTabs(trip),['trip','customs','wildlife']);
+ const field={id:'home-refuge',name:'Home Refuge',guideType:'wildlife',coverUrl:'',tabs:['wildlife'],wildlife:{areas:[{id:'wetland',name:'Wetland'}],species:[{...species(),areaIds:['wetland'],where:[]}]}};
+ const normalized=normalizeTrip(field);assert.deepEqual(normalized.tabs,['wildlife']);assert.deepEqual(tripMeta(normalized).tabs,['wildlife']);
+ const destination={id:'city',name:'City',guideType:'destination',coverUrl:'',places:[{id:'center',title:'Center',attractions:[{id:'museum',name:'Museum',summary:['A museum.']}]}]};
+ assert.deepEqual(normalizeTrip(destination).tabs,['trip','customs']);destination.tabs=['customs','trip'];assert.deepEqual(normalizeTrip(destination).tabs,['customs','trip']);
+ for(const tabs of [[],['trip','trip'],['unknown']]){destination.tabs=tabs;assert.throws(()=>normalizeTrip(destination),/Main tabs/);}
 });

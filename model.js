@@ -135,6 +135,9 @@ function normalizeCustoms(value) {
   const result={guides};if(bytes(result)>100*1024)fail('Customs content can contain at most 100 KB per guidebook.');
   return result;
 }
+const MAIN_TABS=['trip','customs','wildlife'];
+export function guideTabs(guide){if(Array.isArray(guide?.tabs)&&guide.tabs.length)return guide.tabs;return guide?.guideType==='wildlife'?['wildlife']:guide?.guideType==='destination'?['trip','customs',...(guide.wildlife?['wildlife']:[])]:[...MAIN_TABS];}
+function normalizeGuideTabs(value,guide){if(value==null)return guideTabs(guide);const tabs=list(value,3,'Main tabs').map(tab=>text(tab,20,'Main tab',true));if(!tabs.length||new Set(tabs).size!==tabs.length||tabs.some(tab=>!MAIN_TABS.includes(tab)))fail('Main tabs must contain unique values chosen from trip, customs and wildlife.');return tabs;}
 export function normalizeTrip(value) {
   const t = object(value, 'Trip');
   if (t.guideType != null && !['trip','destination','wildlife'].includes(t.guideType)) fail('Guide type must be trip, destination or wildlife.');
@@ -176,6 +179,7 @@ export function normalizeTrip(value) {
   if(wildlifeGuide&&t.wildlife!=null&&!result.wildlife.species.length)fail('A wildlife guide needs at least one species.');
   if (!result.coverUrl) result.coverUrl = result.days[0]?.attractions[0]?.photos[0]?.url || (wildlifeGuide?result.wildlife?.species.find(s=>s.photos.length)?.photos[0].url:'') || '';
   if (t.customs != null) result.customs=normalizeCustoms(t.customs);
+  result.tabs=normalizeGuideTabs(t.tabs,result);
   if (bytes(result) > 5 * 1024 * 1024) fail('A guidebook can contain at most 5 MB of guide text and metadata.');
   return result;
 }
@@ -196,7 +200,7 @@ export function parseImport(raw) {
 export const attractions = trip => trip.days.flatMap(day => day.attractions.map(attraction => ({day, attraction})));
 export function photoUrls(trip) { return [...new Set([trip.headerUrl,trip.coverUrl,...(trip.glossary || []).flatMap(g=>g.photo?[g.photo.url,g.photo.thumbnailUrl]:[]), ...[...attractions(trip).map(({attraction:a})=>a),...(trip.wildlife?.species || [])].flatMap(a=>a.photos.flatMap(p=>[p.url,p.thumbnailUrl]))].filter(Boolean))]; }
 export function tripMeta(trip) {
-  return {id:trip.id, name:trip.name, ...(trip.guideType==='destination'?{guideType:'destination'}:trip.guideType==='wildlife'?{guideType:'wildlife',...(trip.headerUrl?{headerUrl:trip.headerUrl}:{})}:{year:trip.year,startDate:trip.startDate,endDate:trip.endDate,...(trip.headerUrl?{headerUrl:trip.headerUrl}:{})}), coverUrl:trip.coverUrl, glossary:trip.glossary || [], ...(trip.customs?{customs:trip.customs}:{}), ...(trip.wildlife?{wildlife:{browseByArea:trip.wildlife.browseByArea,areas:trip.wildlife.areas,speciesIds:trip.wildlife.species.map(s=>s.id)}}:{}), days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
+  return {id:trip.id, name:trip.name, ...(trip.guideType==='destination'?{guideType:'destination'}:trip.guideType==='wildlife'?{guideType:'wildlife',...(trip.headerUrl?{headerUrl:trip.headerUrl}:{})}:{year:trip.year,startDate:trip.startDate,endDate:trip.endDate,...(trip.headerUrl?{headerUrl:trip.headerUrl}:{})}), coverUrl:trip.coverUrl, tabs:guideTabs(trip), glossary:trip.glossary || [], ...(trip.customs?{customs:trip.customs}:{}), ...(trip.wildlife?{wildlife:{browseByArea:trip.wildlife.browseByArea,areas:trip.wildlife.areas,speciesIds:trip.wildlife.species.map(s=>s.id)}}:{}), days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
 }
 export function hydrateTrip(meta, records, speciesRecords = []) {
   const byId = new Map(records.map(a=>[a.id,a]));
@@ -212,5 +216,5 @@ export function normalizeMeta(value) {
   const trip=normalizeTrip({...m,wildlife:undefined,days:list(m.days,120,'Days').map(d=>({...d,attractions:list(d.attractionIds,100,'Attraction IDs').map(a=>({id:a,name:'Metadata',summary:['Metadata']}))}))});
   let wildlife;if(m.wildlife!=null){const w=object(m.wildlife,'Wildlife metadata'),speciesIds=list(w.speciesIds,600,'Species IDs').map(a=>id(a,'Species ID'));if(new Set(speciesIds).size!==speciesIds.length)fail('Species IDs must be unique.');if(w.browseByArea!=null && typeof w.browseByArea!=='boolean')fail('Regional browsing must be true or false.');wildlife={browseByArea:w.browseByArea===true,areas:normalizeAreas(w.areas),speciesIds};}
   if(typeof m.archived!=='boolean')fail('Invalid archive state.');
-  return {...tripMeta(trip),...(wildlife?{wildlife}:{}),revision:id(m.revision,'Revision'),archiveRevision:id(m.archiveRevision,'Archive revision'),archived:m.archived,updatedAt:Number.isFinite(m.updatedAt)?m.updatedAt:0};
+  return {...tripMeta(trip),tabs:m.tabs==null?guideTabs({...trip,...(wildlife?{wildlife}:{})}):trip.tabs,...(wildlife?{wildlife}:{}),revision:id(m.revision,'Revision'),archiveRevision:id(m.archiveRevision,'Archive revision'),archived:m.archived,updatedAt:Number.isFinite(m.updatedAt)?m.updatedAt:0};
 }
