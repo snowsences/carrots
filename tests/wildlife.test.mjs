@@ -51,3 +51,12 @@ test('minimal regional wildlife survives cloud hydration and searches without it
  s.areaIds=[];assert.throws(()=>normalizeTrip(t),/at least one area/);
  t.wildlife.browseByArea='yes';assert.throws(()=>normalizeTrip(t),/true or false/);
 });
+
+test('standalone wildlife field guides need no trip dates or attractions',()=>{
+ const field={id:'home-refuge',name:'Home Refuge',guideType:'wildlife',coverUrl:'',wildlife:{areas:[{id:'wetland',name:'Wetland'}],species:[{...species(),areaIds:['wetland'],where:[]}]}};
+ const trip=parseImport(JSON.stringify({format:'glauco-trip-file',version:6,trips:[field]}))[0];
+ assert.equal(trip.guideType,'wildlife');assert.equal(trip.days.length,0);assert.equal(trip.wildlife.species.length,1);
+ const meta=normalizeMeta({...tripMeta(trip),revision:'rev',archiveRevision:'archive',archived:false});
+ assert.deepEqual(hydrateTrip(meta,[],trip.wildlife.species),trip);
+ assert.throws(()=>parseImport(JSON.stringify({format:'glauco-trip-file',version:5,trips:[field]})),/version 6/);
+});

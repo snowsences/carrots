@@ -2,8 +2,8 @@ const NAME = 'glauco-local-v1';
 let promise;
 export function openDB() {
   if (!promise) promise = new Promise((resolve,reject)=>{
-    const request = indexedDB.open(NAME,2);
-    request.onupgradeneeded = () => { for (const name of ['trips','outbox','downloads','overrides'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name,{keyPath:'id'}); };
+    const request = indexedDB.open(NAME,3);
+    request.onupgradeneeded = () => { for (const name of ['trips','outbox','downloads','overrides','wildlifeRecords','wildlifeOutings','wildlifeSightings','wildlifeOps'])if(!request.result.objectStoreNames.contains(name))request.result.createObjectStore(name,{keyPath:'id'}); };
     request.onsuccess = () => resolve(request.result); request.onerror = () => {promise=null;reject(request.error);};
   });
   return promise;
@@ -18,4 +18,4 @@ export async function change(operations) {
 }
 export const put=(store,value)=>change([{store,value}]);
 export const remove=(store,id)=>change([{store,type:'delete',id}]);
-export async function clearPrivate() {await change(['trips','outbox','downloads','overrides'].map(store=>({store,type:'clear'})));for(const name of await caches.keys())if(name.startsWith('glauco-trip-'))await caches.delete(name);}
+export async function clearPrivate() {await change(['trips','outbox','downloads','overrides','wildlifeRecords','wildlifeOutings','wildlifeSightings','wildlifeOps'].map(store=>({store,type:'clear'})));for(const name of await caches.keys())if(name.startsWith('glauco-trip-'))await caches.delete(name);}

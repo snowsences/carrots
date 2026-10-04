@@ -137,15 +137,16 @@ function normalizeCustoms(value) {
 }
 export function normalizeTrip(value) {
   const t = object(value, 'Trip');
-  if (t.guideType != null && !['trip','destination'].includes(t.guideType)) fail('Guide type must be trip or destination.');
+  if (t.guideType != null && !['trip','destination','wildlife'].includes(t.guideType)) fail('Guide type must be trip, destination or wildlife.');
   const destination=t.guideType==='destination';
-  if (!destination && (!Number.isInteger(t.year) || t.year < 1900 || t.year > 2200)) fail('Trip year must be between 1900 and 2200.');
+  const wildlifeGuide=t.guideType==='wildlife';
+  if (!destination && !wildlifeGuide && (!Number.isInteger(t.year) || t.year < 1900 || t.year > 2200)) fail('Trip year must be between 1900 and 2200.');
   const headerUrl=url(t.headerUrl, 'Header image', true);
-  const result = {id: id(t.id, 'Trip ID'), name: text(t.name, 180, destination?'Guide name':'Trip name', true), ...(destination?{guideType:'destination'}:{year:t.year,startDate:date(t.startDate, 'Start date', true),endDate:date(t.endDate, 'End date', true),...(headerUrl?{headerUrl}:{})}), coverUrl: url(t.coverUrl, 'Cover image', true), glossary:list(t.glossary || [], 60, 'Glossary').map(value => {const g=object(value, 'Glossary term'),term=text(g.term, 80, 'Glossary term', true);return {term,definition:text(g.definition, 800, 'Glossary definition', true),aliases:list(g.aliases || [],8,'Glossary aliases').map(alias => text(alias,80,'Glossary alias',true)),...(g.photo?{photo:normalizeGlossaryPhoto(g.photo,term)}:{})};}), days: []};
+  const result = {id: id(t.id, 'Trip ID'), name: text(t.name, 180, destination||wildlifeGuide?'Guide name':'Trip name', true), ...(destination?{guideType:'destination'}:wildlifeGuide?{guideType:'wildlife',...(headerUrl?{headerUrl}:{})}:{year:t.year,startDate:date(t.startDate, 'Start date', true),endDate:date(t.endDate, 'End date', true),...(headerUrl?{headerUrl}:{})}), coverUrl: url(t.coverUrl, 'Cover image', true), glossary:list(t.glossary || [], 60, 'Glossary').map(value => {const g=object(value, 'Glossary term'),term=text(g.term, 80, 'Glossary term', true);return {term,definition:text(g.definition, 800, 'Glossary definition', true),aliases:list(g.aliases || [],8,'Glossary aliases').map(alias => text(alias,80,'Glossary alias',true)),...(g.photo?{photo:normalizeGlossaryPhoto(g.photo,term)}:{})};}), days: []};
   const glossaryNames=new Set();for(const g of result.glossary)for(const name of [g.term,...g.aliases]){const key=name.toLocaleLowerCase('en');if(glossaryNames.has(key))fail('Glossary terms and aliases must be unique.');glossaryNames.add(key);}
-  if (!destination && (result.endDate < result.startDate || Number(result.startDate.slice(0,4)) !== t.year)) fail('Trip dates must be in order, and the year must match the start date.');
+  if (!destination && !wildlifeGuide && (result.endDate < result.startDate || Number(result.startDate.slice(0,4)) !== t.year)) fail('Trip dates must be in order, and the year must match the start date.');
   const dayIds = new Set(), attrIds = new Set(); let previous = '';
-  const groups=destination?(t.places ?? t.days):t.days;
+  const groups=wildlifeGuide?[]:destination?(t.places ?? t.days):t.days;
   for (const d of list(groups, 120, destination?'Places':'Days')) {
     object(d, destination?'Place':'Day'); const day = {id:id(d.id, destination?'Place ID':'Day ID'), date:destination?'':date(d.date, 'Day date', true), title:text(d.title, 180, destination?'Place name':'Day title', true), attractions:[]};
     if (dayIds.has(day.id) || (!destination && (day.date < previous || day.date < result.startDate || day.date > result.endDate))) fail(destination?'Places must have unique IDs.':'Days must have unique IDs and chronological dates within the trip.');
@@ -170,9 +171,10 @@ export function normalizeTrip(value) {
     }
     visited.add(a.id);
   }
-  if (!result.days.length || attrIds.size > 400) fail(`${destination?'A destination guide':'A trip'} needs between 1 and 400 attractions.`);
-  if (!result.coverUrl) result.coverUrl = result.days[0].attractions[0].photos[0]?.url || '';
+  if (!wildlifeGuide && (!result.days.length || attrIds.size > 400)) fail(`${destination?'A destination guide':'A trip'} needs between 1 and 400 attractions.`);
   if (t.wildlife != null) result.wildlife=normalizeWildlife(t.wildlife,attrIds);
+  if(wildlifeGuide&&t.wildlife!=null&&!result.wildlife.species.length)fail('A wildlife guide needs at least one species.');
+  if (!result.coverUrl) result.coverUrl = result.days[0]?.attractions[0]?.photos[0]?.url || (wildlifeGuide?result.wildlife?.species.find(s=>s.photos.length)?.photos[0].url:'') || '';
   if (t.customs != null) result.customs=normalizeCustoms(t.customs);
   if (bytes(result) > 5 * 1024 * 1024) fail('A guidebook can contain at most 5 MB of guide text and metadata.');
   return result;
@@ -181,18 +183,20 @@ export function parseImport(raw) {
   if (new TextEncoder().encode(raw).length > MAX_FILE) fail('Import files can be at most 12 MB.');
   let payload; try { payload = JSON.parse(raw); } catch { fail('This is not valid JSON. Import a Glauco guidebook file prepared from the template.'); }
   rejectUnsafeKeys(payload); object(payload, 'Import file');
-  if (payload.format !== FORMAT || ![1,2,3,4,5].includes(payload.version)) fail('Use a Glauco trip file with format "glauco-trip-file" and version 1, 2, 3, 4 or 5. Lambus PDFs need to be processed first.');
+  if (payload.format !== FORMAT || ![1,2,3,4,5,6].includes(payload.version)) fail('Use a Glauco guidebook file with format "glauco-trip-file" and version 1 through 6. Lambus PDFs need to be processed first.');
   const rawTrips=list(payload.trips, 30, 'Trips');
   if(payload.version<5&&rawTrips.some(t=>t?.guideType==='destination'))fail('Destination guides require file version 5.');
+  if(payload.version<6&&rawTrips.some(t=>t?.guideType==='wildlife'))fail('Wildlife field guides require file version 6.');
   if(rawTrips.some(t=>t?.guideType==='destination'&&!Array.isArray(t.places)))fail('Destination guides must contain places.');
   const trips = rawTrips.map(normalizeTrip);
+  if(trips.some((trip,index)=>trip.guideType==='wildlife'&&!rawTrips[index].wildlife))fail('Wildlife field guides need wildlife content.');
   if (!trips.length || new Set(trips.map(t=>t.id)).size !== trips.length) fail('The file needs guidebooks with unique IDs.');
   return trips;
 }
 export const attractions = trip => trip.days.flatMap(day => day.attractions.map(attraction => ({day, attraction})));
 export function photoUrls(trip) { return [...new Set([trip.headerUrl,trip.coverUrl,...(trip.glossary || []).flatMap(g=>g.photo?[g.photo.url,g.photo.thumbnailUrl]:[]), ...[...attractions(trip).map(({attraction:a})=>a),...(trip.wildlife?.species || [])].flatMap(a=>a.photos.flatMap(p=>[p.url,p.thumbnailUrl]))].filter(Boolean))]; }
 export function tripMeta(trip) {
-  return {id:trip.id, name:trip.name, ...(trip.guideType==='destination'?{guideType:'destination'}:{year:trip.year,startDate:trip.startDate,endDate:trip.endDate,...(trip.headerUrl?{headerUrl:trip.headerUrl}:{})}), coverUrl:trip.coverUrl, glossary:trip.glossary || [], ...(trip.customs?{customs:trip.customs}:{}), ...(trip.wildlife?{wildlife:{browseByArea:trip.wildlife.browseByArea,areas:trip.wildlife.areas,speciesIds:trip.wildlife.species.map(s=>s.id)}}:{}), days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
+  return {id:trip.id, name:trip.name, ...(trip.guideType==='destination'?{guideType:'destination'}:trip.guideType==='wildlife'?{guideType:'wildlife',...(trip.headerUrl?{headerUrl:trip.headerUrl}:{})}:{year:trip.year,startDate:trip.startDate,endDate:trip.endDate,...(trip.headerUrl?{headerUrl:trip.headerUrl}:{})}), coverUrl:trip.coverUrl, glossary:trip.glossary || [], ...(trip.customs?{customs:trip.customs}:{}), ...(trip.wildlife?{wildlife:{browseByArea:trip.wildlife.browseByArea,areas:trip.wildlife.areas,speciesIds:trip.wildlife.species.map(s=>s.id)}}:{}), days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
 }
 export function hydrateTrip(meta, records, speciesRecords = []) {
   const byId = new Map(records.map(a=>[a.id,a]));

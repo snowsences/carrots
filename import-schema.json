@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://glauco.local/import-schema-v5",
+  "$id": "https://glauco.local/import-schema-v6",
   "title": "Glauco guidebook file",
   "type": "object",
   "required": [
@@ -18,9 +18,10 @@
         2,
         3,
         4,
-        5
+        5,
+        6
       ],
-      "description": "Use version 5 for destination guides. Existing dated trip files using versions 1 through 4 remain accepted without changes."
+      "description": "Use version 6 for standalone wildlife field guides. Destination guides use version 5 or 6. Existing dated trip files remain accepted without changes."
     },
     "trips": {
       "type": "array",
@@ -33,6 +34,9 @@
           },
           {
             "$ref": "#/$defs/destinationGuide"
+          },
+          {
+            "$ref": "#/$defs/wildlifeGuide"
           }
         ]
       }
@@ -841,6 +845,24 @@
         "title",
         "attractions"
       ]
+    },
+    "wildlifeGuide": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 180 },
+        "guideType": { "const": "wildlife" },
+        "coverUrl": { "$ref": "#/$defs/optionalUrl" },
+        "headerUrl": { "$ref": "#/$defs/optionalUrl" },
+        "glossary": {
+          "type": "array",
+          "maxItems": 60,
+          "items": { "$ref": "#/$defs/glossaryTerm" }
+        },
+        "wildlife": { "$ref": "#/$defs/wildlife" }
+      },
+      "required": ["id", "name", "guideType", "coverUrl", "wildlife"]
     },
     "destinationGuide": {
       "type": "object",

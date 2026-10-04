@@ -1,66 +1,54 @@
-// Wildlife is prepared in guidebook files. Browsing never queries a live taxonomy API.
+import {activeOuting,guideOutings,speciesStats,wildlifeRecordId} from './wildlife-tracking.js';
+
 const browsing=new Map();
 export const clearWildlifeBrowsing=()=>browsing.clear();
-export const wildlifeHref=(tripId,kind='',speciesId='')=>`#/wildlife/${tripId}${kind?`/${kind}`:''}${speciesId?`/${speciesId}`:''}`;
+export const wildlifeHref=(guideId,kind='',speciesId='')=>`#/wildlife/${guideId}${kind?`/${kind}`:''}${speciesId?`/${speciesId}`:''}`;
 const labels={fauna:'Fauna',flora:'Flora'};
 const preferredGroups=['Mammals','Birds','Reptiles','Amphibians','Fish','Butterflies','Dragonflies','Other insects','Other invertebrates','Trees','Palms','Shrubs','Climbers','Herbs','Ferns','Aquatic plants'];
+const when=value=>value?new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric'}).format(new Date(value)):'';
 export function speciesMatches(species,query,areaId='') {
   const needle=query.trim().toLocaleLowerCase();
   return (!areaId || (species.areaIds || species.where.map(w=>w.areaId)).includes(areaId)) && (!needle || [species.name,species.scientificName,species.group,species.status,...species.aliases,...species.identification,...species.summary,...species.lookalikes.flatMap(a=>[a.name,a.distinction])].join(' ').toLocaleLowerCase().includes(needle));
 }
+
 export function renderWildlifeView(entry,trip,route,ui) {
-  const {h,link,back,image,main,empty,guideParagraph,external,showPhotos,applyBackground}=ui;
-  const wildlife=trip.wildlife,all=wildlife?.species || [];
+  const {h,link,back,image,main,empty,guideParagraph,external,showPhotos,applyBackground,tracker}=ui;
+  const wildlife=trip.wildlife,all=wildlife?.species || [],records=tracker.records,outings=tracker.outings,sightings=tracker.sightings;
   if(!wildlife || !all.length){main.replaceChildren(empty('No wildlife guide here yet.','Import an updated guidebook file in Settings to add plants and animals.'));return;}
   const root=wildlifeHref(entry.id),kind=route.day,region=wildlife.browseByArea?wildlife.areas.find(a=>`region-${a.id}`===kind):null;
-  const title=region?.name || labels[kind],groupOf=s=>region?(s.kind==='flora'?'Plants':s.group==='Birds'?'Birds':'Other animals'):s.group;
-  const card=(s,href)=>h('article',{class:'attraction-card wildlife-card'},link([image(s.photos[0]?.thumbnailUrl || s.photos[0]?.url,'',s.photos.length?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},s.name),h('p',{},h('i',{},s.scientificName)))],href,{class:'attraction-link'}));
-  if(!labels[kind] && !region){
-    if(wildlife.browseByArea){
-      const cards=wildlife.areas.map(area=>{
-        const entries=all.filter(s=>s.areaIds.includes(area.id)),sample=entries.find(s=>s.photos.length);
-        return h('article',{class:'attraction-card wildlife-category'},link([image(sample?.photos[0]?.url,'',sample?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},area.name),h('p',{},area.description))],wildlifeHref(entry.id,`region-${area.id}`),{class:'attraction-link'}));
-      });if(cards.length===2)document.body.classList.add('wildlife-pair-view');main.replaceChildren(h('div',{class:`wildlife-landing attraction-grid${cards.length===2?' wildlife-landing-pair':''}`},...cards));return;
-    }
-    const cards=['fauna','flora'].map(k=>{
-      const species=all.filter(s=>s.kind===k),sample=species.find(s=>s.photos.length);
-      return h('article',{class:'attraction-card wildlife-category'},link([image(sample?.photos[0]?.url,'',sample?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},labels[k]),h('p',{},k==='fauna'?'Animals to look for':'Plants to look for'))],wildlifeHref(entry.id,k),{class:'attraction-link'}));
-    });document.body.classList.add('wildlife-pair-view');main.replaceChildren(h('div',{class:'wildlife-landing wildlife-landing-pair attraction-grid'},...cards));
-    return;
+  const stats=s=>speciesStats(sightings,entry.id,s.id),record=s=>records.get(wildlifeRecordId(entry.id,s.id)),speciesPhoto=s=>record(s)?.photo||s?.photos?.[0];
+  const tabs=current=>h('nav',{class:'segmented wildlife-mode-tabs','aria-label':'Wildlife views'},...[['guide','Guide',root],['seen','Seen',wildlifeHref(entry.id,'seen')],['outings','Outings',wildlifeHref(entry.id,'outings')]].map(([key,label,href])=>link(label,href,{class:key===current?'active':'','aria-current':key===current?'page':null})));
+  const card=(s,href)=>{const seen=stats(s),photo=speciesPhoto(s);return h('article',{class:'attraction-card wildlife-card'},link([image(photo?.thumbnailUrl||photo?.url,'',photo?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},s.name),h('p',{},h('i',{},s.scientificName)),seen.count?h('span',{class:'seen-badge'},`${seen.count} ${seen.count===1?'sighting':'sightings'}`):null)],href,{class:'attraction-link'}));};
+  const finder=(items,placeholder,onPick,checked=new Set())=>{const results=h('div',{class:'outing-checklist'}),search=h('input',{type:'search',placeholder,'aria-label':placeholder});const update=()=>{const matches=items.filter(s=>speciesMatches(s,search.value)).sort((a,b)=>a.name.localeCompare(b.name));results.replaceChildren(...matches.map(s=>{const photo=speciesPhoto(s);return h('button',{type:'button',class:`outing-species-row ${checked.has(s.id)?'seen':''}`,'aria-pressed':checked.has(s.id),onclick:()=>onPick(s)},image(photo?.thumbnailUrl||photo?.url,s.name,photo?'':'placeholder'),h('span',{},h('strong',{},s.name),h('small',{},s.scientificName)),h('span',{class:'checkmark','aria-hidden':'true'},checked.has(s.id)?'✓':'+'));}));if(!matches.length)results.append(h('p',{class:'muted'},'No matching species.'));};search.addEventListener('input',update);update();return h('div',{class:'wildlife-finder'},h('div',{class:'search-wrap wildlife-search'},search),results);};
+
+  if(kind==='seen'){
+    const seen=all.filter(s=>stats(s).count),query=h('input',{type:'search',placeholder:'Search sightings','aria-label':'Search sightings'}),results=h('div',{class:'attraction-grid'});
+    const update=()=>{const matches=seen.filter(s=>speciesMatches(s,query.value));results.replaceChildren(...matches.sort((a,b)=>stats(b).latest.localeCompare(stats(a).latest)).map(s=>card(s,wildlifeHref(entry.id,s.kind,s.id))));if(!matches.length)results.append(empty(seen.length?'No matching sightings':'Nothing marked seen yet',seen.length?'Try another search.':'Start an outing or mark a species as seen from its guide page.'));};
+    query.addEventListener('input',update);main.replaceChildren(tabs('seen'),h('div',{class:'page-heading'},h('div',{},h('h1',{},'Seen'),h('p',{class:'muted'},`${seen.length} species recorded`))),h('div',{class:'search-wrap wildlife-search'},query),results);update();return;
   }
+
+  if(kind==='outings'){
+    const current=activeOuting(outings,entry.id),outingId=route.attraction;
+    if(outingId){const outing=outings.get(outingId);if(!outing||outing.guideId!==entry.id){main.replaceChildren(tabs('outings'),empty('Outing not found','Choose another outing from your journal.'));return;}const observations=[...sightings.values()].filter(s=>s.outingId===outing.id),species=observations.map(obs=>all.find(s=>s.id===obs.speciesId)).filter(Boolean);main.replaceChildren(tabs('outings'),back('Outings',wildlifeHref(entry.id,'outings')),h('article',{class:'panel outing-detail'},h('h1',{},outing.location),h('p',{class:'muted'},`${when(outing.startedAt)}${outing.endedAt?` · ${species.length} species`:' · In progress'}`),outing.notes?h('p',{},outing.notes):null),h('div',{class:'attraction-grid'},...species.map(s=>card(s,wildlifeHref(entry.id,s.kind,s.id)))));return;}
+    const past=guideOutings(outings,entry.id).filter(o=>o.endedAt),content=[tabs('outings'),h('div',{class:'page-heading'},h('div',{},h('h1',{},'Outings'),h('p',{class:'muted'},'Keep a checklist for each visit.')))];
+    if(current){const checked=new Set([...sightings.values()].filter(s=>s.outingId===current.id).map(s=>s.speciesId));const panel=h('section',{class:'panel active-outing'},h('div',{class:'outing-header'},h('div',{},h('span',{class:'eyebrow'},'Current outing'),h('h2',{},current.location),h('p',{class:'muted'},`Started ${when(current.startedAt)} · ${checked.size} species`)),h('button',{type:'button',class:'button primary',onclick:async()=>{await tracker.endOuting(current);renderWildlifeView(entry,trip,route,ui);}},'Finish')));content.push(panel,finder(all,'Search species to check off',async s=>{await tracker.toggleSighting(current,s);renderWildlifeView(entry,trip,route,ui);},checked));}
+    else{const location=h('input',{type:'text',maxlength:180,placeholder:'Wildlife refuge or location',value:tracker.lastLocation(entry.id),'aria-label':'Outing location'});content.push(h('section',{class:'panel start-outing'},h('h2',{},'Start an outing'),h('p',{},'Open a quick checklist for this visit. It also works offline.'),location,h('button',{type:'button',class:'button primary',onclick:async()=>{if(!location.value.trim()){location.focus();return;}await tracker.startOuting(entry.id,location.value.trim());renderWildlifeView(entry,trip,route,ui);}},'Start outing')));}
+    if(past.length)content.push(h('section',{class:'outing-history'},h('h2',{},'Past outings'),...past.map(o=>{const count=new Set([...sightings.values()].filter(s=>s.outingId===o.id).map(s=>s.speciesId)).size;return link([h('strong',{},o.location),h('span',{class:'muted'},`${when(o.startedAt)} · ${count} species`)],wildlifeHref(entry.id,'outings',o.id),{class:'panel outing-card'});})));main.replaceChildren(...content);return;
+  }
+
+  const title=region?.name||labels[kind],groupOf=s=>region?(s.kind==='flora'?'Plants':s.group==='Birds'?'Birds':'Other animals'):s.group;
+  if(!labels[kind]&&!region){const landing=wildlife.browseByArea?wildlife.areas.map(area=>{const entries=all.filter(s=>s.areaIds.includes(area.id)),sample=entries.find(s=>speciesPhoto(s)),photo=speciesPhoto(sample);return h('article',{class:'attraction-card wildlife-category'},link([image(photo?.url,'',photo?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},area.name),h('p',{},area.description))],wildlifeHref(entry.id,`region-${area.id}`),{class:'attraction-link'}));}):['fauna','flora'].map(k=>{const species=all.filter(s=>s.kind===k),sample=species.find(s=>speciesPhoto(s)),photo=speciesPhoto(sample);return h('article',{class:'attraction-card wildlife-category'},link([image(photo?.url,'',photo?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},labels[k]),h('p',{},k==='fauna'?'Animals to look for':'Plants to look for'))],wildlifeHref(entry.id,k),{class:'attraction-link'}));});if(landing.length===2)document.body.classList.add('wildlife-pair-view');main.replaceChildren(tabs('guide'),h('div',{class:`wildlife-landing attraction-grid${landing.length===2?' wildlife-landing-pair':''}`},...landing));return;}
   const sectionHref=wildlifeHref(entry.id,kind),species=all.filter(s=>region?s.areaIds.includes(region.id):s.kind===kind);
   if(route.attraction){
-    const s=species.find(s=>s.id===route.attraction);
-    if(!s){main.replaceChildren(back(title,sectionHref),empty('Species not found','Choose a plant or animal from this guide.'));return;}
-    const article=h('article',{class:'article wildlife-detail'},back(title,sectionHref),h('h1',{},s.name),h('p',{class:'article-location'},h('i',{},s.scientificName)));
-    if(s.photos.length)article.append(h('div',{class:'photo-gallery','aria-label':'Species photos'},...s.photos.map((p,index)=>h('button',{class:'photo-tile',type:'button','aria-label':`View photo ${index+1} of ${s.name}`,onclick:()=>showPhotos(s.photos,index,s.name)},image(p.url,s.name)))));
-    article.append(h('section',{class:'guide-text identification'},h('h2',{},'How to recognise'),h('ul',{},...s.identification.map(p=>h('li',{},p)))));
-    article.append(h('section',{class:'guide-text'},h('h2',{},'At a glance'),...s.summary.map(p=>guideParagraph(trip,p))));
-    const wikipedia=s.wikipediaUrl || s.sources.find(source=>/(^|\.)wikipedia\.org$/.test(new URL(source.url).hostname))?.url;
-    if(wikipedia)article.append(h('div',{class:'sources'},external('Read on Wikipedia',wikipedia)));
-    main.replaceChildren(article);applyBackground(article,s.photos[0]);return;
+    const s=species.find(s=>s.id===route.attraction);if(!s){main.replaceChildren(back(title,sectionHref),empty('Species not found','Choose a plant or animal from this guide.'));return;}
+    const personal=record(s),seen=stats(s),photos=[...(personal?.photo?[personal.photo]:[]),...s.photos.filter(p=>p.url!==personal?.photo?.url)],article=h('article',{class:'article wildlife-detail'},back(title,sectionHref),h('h1',{},s.name),h('p',{class:'article-location'},h('i',{},s.scientificName)));
+    if(photos.length)article.append(h('div',{class:'photo-gallery wildlife-photo-gallery','aria-label':'Species photos'},...photos.map((p,index)=>h('button',{class:'photo-tile',type:'button','aria-label':`View photo ${index+1} of ${s.name}`,onclick:()=>showPhotos(photos,index,s.name)},image(p.url,s.name)))));
+    const file=h('input',{type:'file',accept:'image/*',class:'sr-only'});file.addEventListener('change',()=>{if(file.files?.[0])tracker.replacePhoto(s,file.files[0]);file.value='';});
+    const journal=h('section',{class:'panel species-journal'},h('div',{class:'species-journal-heading'},h('div',{},h('h2',{},'My sightings'),h('p',{class:'muted'},seen.count?`${seen.count} ${seen.count===1?'observation':'observations'} · latest ${when(seen.latest)}`:'Not seen yet')),h('button',{type:'button',class:'button primary',onclick:()=>tracker.markSeen(s)},activeOuting(outings,entry.id)?'Add to outing':'Mark seen')),h('div',{class:'species-actions'},h('button',{type:'button',class:'button',onclick:()=>file.click()},personal?.photo?'Replace my cover photo':'Add my cover photo'),file));
+    const notes=h('textarea',{rows:4,maxlength:5000,placeholder:'Field marks, behavior, where you saw it, or anything you want to remember...','aria-label':`Notes about ${s.name}`});notes.value=personal?.notes||'';journal.append(h('label',{class:'species-notes'},h('span',{},'My notes'),notes),h('button',{type:'button',class:'button',onclick:()=>tracker.saveNotes(s,notes.value)},'Save notes'));
+    article.append(journal,h('section',{class:'guide-text identification'},h('h2',{},'How to recognise'),h('ul',{},...s.identification.map(p=>h('li',{},p)))),h('section',{class:'guide-text'},h('h2',{},'At a glance'),...s.summary.map(p=>guideParagraph(trip,p))));const wikipedia=s.wikipediaUrl||s.sources.find(source=>/(^|\.)wikipedia\.org$/.test(new URL(source.url).hostname))?.url;if(wikipedia)article.append(h('div',{class:'sources'},external('Read on Wikipedia',wikipedia)));main.replaceChildren(article);applyBackground(article,photos[0]);return;
   }
-  const stateKey=`${entry.id}/${kind}`,saved=browsing.get(stateKey)||{query:'',area:''};browsing.set(stateKey,saved);
-  const areas=wildlife.areas.filter(a=>species.some(s=>s.areaIds.includes(a.id)));
-  if(!areas.some(a=>a.id===saved.area))saved.area='';
-  const results=h('div',{class:'wildlife-results','aria-live':'polite'}),jump=h('nav',{class:'wildlife-group-jump','aria-label':'Jump to a group'});
-  const search=h('input',{type:'search',id:'wildlifeSearch',placeholder:`Search ${title.toLowerCase()}`,value:saved.query,'aria-label':`Search ${title.toLowerCase()}`,oninput:()=>{saved.query=search.value;clear.classList.toggle('hidden',!saved.query);update();}});
-  const clear=h('button',{type:'button',class:`clear-search ${saved.query?'':'hidden'}`,'aria-label':'Clear wildlife search',onclick:()=>{saved.query='';search.value='';clear.classList.add('hidden');update();search.focus();}},'×');
-  const filters=h('div',{class:'wildlife-areas','aria-label':'Habitat or area filter'});
-  function update(){
-    for(const chip of filters.children){const selected=chip.dataset.area===saved.area;chip.classList.toggle('active',selected);chip.setAttribute('aria-pressed',String(selected));}
-    const matches=species.filter(s=>speciesMatches(s,saved.query,region?.id || saved.area)),groups=[...new Set(matches.map(groupOf))].sort((a,b)=>{
-      const order=region?['Plants','Birds','Other animals']:preferredGroups,ai=order.indexOf(a),bi=order.indexOf(b);return (ai<0?999:ai)-(bi<0?999:bi)||a.localeCompare(b);
-    });
-    jump.replaceChildren();results.replaceChildren();
-    const area=areas.find(a=>a.id===saved.area);if(area?.description)results.append(h('p',{class:'muted'},area.description));
-    if(!matches.length){results.append(h('p',{class:'muted'},species.length?'No matching species. Try a different search or area.':'This section has no entries in this guidebook yet.'));return;}
-    for(const [index,group] of groups.entries()){
-      const id=`wildlife-group-${index}`;
-      if(groups.length>1)jump.append(h('button',{type:'button',class:'button ghost',onclick:()=>document.getElementById(id)?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'})},group));
-      results.append(h('section',{class:'wildlife-group',id},h('h2',{},group),h('div',{class:'attraction-grid'},...matches.filter(s=>groupOf(s)===group).sort((a,b)=>a.name.localeCompare(b.name)).map(s=>card(s,wildlifeHref(entry.id,kind,s.id))))));
-    }
-  }
-  if(!region && areas.length>1)for(const area of [{id:'',name:'All'},...areas])filters.append(h('button',{type:'button',class:'button ghost','data-area':area.id,'aria-pressed':false,onclick:()=>{saved.area=area.id;update();}},area.name));
-  main.replaceChildren(back('Wildlife',root),h('h1',{},title),h('div',{class:'search-wrap wildlife-search'},search,clear),...(!region && areas.length>1?[filters]:[]),jump,results);update();
+  const stateKey=`${entry.id}/${kind}`,saved=browsing.get(stateKey)||{query:'',area:'',seen:'all'};browsing.set(stateKey,saved);const areas=wildlife.areas.filter(a=>species.some(s=>s.areaIds.includes(a.id)));if(!areas.some(a=>a.id===saved.area))saved.area='';const results=h('div',{class:'wildlife-results','aria-live':'polite'}),jump=h('nav',{class:'wildlife-group-jump','aria-label':'Jump to a group'}),search=h('input',{type:'search',id:'wildlifeSearch',placeholder:`Search ${title.toLowerCase()}`,value:saved.query,'aria-label':`Search ${title.toLowerCase()}`}),filters=h('div',{class:'wildlife-areas','aria-label':'Wildlife filters'});
+  function update(){const matches=species.filter(s=>speciesMatches(s,saved.query,region?.id||saved.area)&&(saved.seen==='all'||(saved.seen==='seen')===Boolean(stats(s).count))),groups=[...new Set(matches.map(groupOf))].sort((a,b)=>{const order=region?['Plants','Birds','Other animals']:preferredGroups,ai=order.indexOf(a),bi=order.indexOf(b);return (ai<0?999:ai)-(bi<0?999:bi)||a.localeCompare(b);});jump.replaceChildren();results.replaceChildren();if(!matches.length){results.append(h('p',{class:'muted'},'No matching species. Try another filter.'));return;}for(const [index,group] of groups.entries()){const id=`wildlife-group-${index}`;if(groups.length>1)jump.append(h('button',{type:'button',class:'button ghost',onclick:()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})},group));results.append(h('section',{class:'wildlife-group',id},h('h2',{},group),h('div',{class:'attraction-grid'},...matches.filter(s=>groupOf(s)===group).sort((a,b)=>a.name.localeCompare(b.name)).map(s=>card(s,wildlifeHref(entry.id,kind,s.id))))));}}
+  search.addEventListener('input',()=>{saved.query=search.value;update();});for(const [value,label] of [['all','All'],['unseen','Not seen'],['seen','Seen']])filters.append(h('button',{type:'button',class:`button ghost ${saved.seen===value?'active':''}`,onclick:()=>{saved.seen=value;renderWildlifeView(entry,trip,route,ui);}},label));if(!region&&areas.length>1)for(const area of [{id:'',name:'All areas'},...areas])filters.append(h('button',{type:'button',class:`button ghost ${saved.area===area.id?'active':''}`,onclick:()=>{saved.area=area.id;renderWildlifeView(entry,trip,route,ui);}},area.name));main.replaceChildren(tabs('guide'),back('Wildlife',root),h('h1',{},title),h('div',{class:'search-wrap wildlife-search'},search),filters,jump,results);update();
 }
