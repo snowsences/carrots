@@ -34,10 +34,9 @@ export function renderWildlifeView(entry,trip,route,ui) {
   if(route.attraction){
     const s=species.find(s=>s.id===route.attraction);if(!s){main.replaceChildren(back(title,sectionHref),empty('Species not found','Choose a plant or animal from this guide.'));return;}
     const personal=record(s),seen=isSeen(s),photos=[...(personal?.photo?[personal.photo]:[]),...s.photos.filter(p=>p.url!==personal?.photo?.url)],article=h('article',{class:'article wildlife-detail'},back(title,sectionHref),h('h1',{},s.name),h('p',{class:'article-location'},h('i',{},s.scientificName)));
-    if(photos.length)article.append(h('div',{class:'photo-gallery wildlife-photo-gallery','aria-label':'Species photos'},...photos.map((p,index)=>h('button',{class:'photo-tile',type:'button','aria-label':`View photo ${index+1} of ${s.name}`,onclick:()=>showPhotos(photos,index,s.name)},image(p.url,s.name)))));
-    const coverFile=h('input',{type:'file',accept:'image/*',class:'sr-only'});coverFile.addEventListener('change',()=>{if(coverFile.files?.[0])tracker.replacePhoto(s,coverFile.files[0]);coverFile.value='';});
+    if(photos.length)article.append(h('div',{class:'photo-gallery wildlife-photo-gallery','aria-label':'Species photos'},...photos.map((p,index)=>h('button',{class:'photo-tile',type:'button','aria-label':`View photo ${index+1} of ${s.name}`,onclick:()=>showPhotos(photos,index,s.name,{kind:'wildlife',species:s})},image(p.url,s.name)))));
     const journal=h('section',{class:'panel species-journal'});
-    journal.append(h('div',{class:'species-journal-heading'},h('div',{},h('h2',{},'Seen'),h('p',{class:'muted'},seen?'Marked as seen':'Not seen yet')),h('button',{type:'button',class:'button primary',onclick:()=>tracker.toggleSeen(s)},seen?'Mark not seen':'Mark seen')),h('div',{class:'species-actions'},h('button',{type:'button',class:'button',onclick:()=>coverFile.click()},personal?.photo?'Replace my cover photo':'Add my cover photo'),coverFile));
+    journal.append(h('div',{class:'species-journal-heading'},h('div',{},h('h2',{},'Seen'),h('p',{class:'muted'},seen?'Marked as seen':'Not seen yet')),seen?h('button',{type:'button',class:'text-action species-unsee',onclick:()=>tracker.toggleSeen(s)},'Mark Not Seen'):h('button',{type:'button',class:'button primary',onclick:()=>tracker.toggleSeen(s)},'Mark seen')));
 
     const noteList=speciesNotes(notes,entry.id,s.id),editorHost=h('div',{class:'wildlife-note-editor-host'}),timeline=h('div',{class:'wildlife-note-timeline'});
     const closeEditor=()=>editorHost.replaceChildren();

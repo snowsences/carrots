@@ -38,11 +38,12 @@
 
 /* Full-screen photo viewer keeps the image proportions and controls separate. */
 .photo-dialog{position:fixed;inset:0;width:100vw;height:100dvh;max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;background:#000;color:#fff;overflow:hidden}
-.photo-inner{display:flex;flex-direction:column;width:100%;height:100%;min-height:0}
-.photo-header{display:flex;justify-content:flex-end;flex:none;padding:calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 8px 8px}
+.photo-inner{display:flex;flex-direction:column;width:100%;height:100%;min-height:0;background:#000;color:#fff}
+.photo-header{display:flex;justify-content:flex-end;gap:8px;flex:none;padding:calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 8px 8px;background:#000;color:#fff}
 .photo-stage{flex:1;min-height:0;overflow:auto;display:grid;align-items:center;overscroll-behavior:contain;background:#000}
 .photo-stage img{display:block;width:100%;height:auto;max-width:none;max-height:none}
-.photo-navigation{display:flex;justify-content:center;gap:24px;flex:none;padding:8px calc(16px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
+.photo-navigation{display:flex;justify-content:center;gap:24px;flex:none;padding:8px calc(16px + env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));background:#000;color:#fff}
+.photo-cover-action{background:#202020!important;color:#fff!important;border:0}
 .photo-dialog .icon-button{background:#202020;color:#fff;border:0;box-shadow:0px 1px 3px 0px rgba(0,0,0,0.35)}
 .photo-prev,.photo-next{font-size:32px}
 .photo-close{margin-left:auto}.photo-replace{display:none}.photo-drop-active{position:relative;outline:3px solid var(--link);outline-offset:-3px}.photo-drop-active::after{content:"Drop to replace";position:absolute;z-index:5;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.58);color:#fff;font-weight:500;pointer-events:none}
