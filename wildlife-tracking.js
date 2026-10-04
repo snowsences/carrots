@@ -14,7 +14,7 @@ export function normalizeWildlifeRecord(value){
  const guideId=component(value.guideId,'Guide ID'),speciesId=component(value.speciesId,'Species ID'),id=docId(value.id,'Wildlife record ID');
  if(id!==wildlifeRecordId(guideId,speciesId))throw new Error('Wildlife record ID does not match.');
  const photo=cleanPhoto(value.photo);
- return {id,guideId,speciesId,notes:cleanText(value.notes,5000,'Species notes'),...(photo?{photo}:{}),updatedAt:Number.isFinite(value.updatedAt)?value.updatedAt:0};
+ return {id,guideId,speciesId,seen:value.seen===true,seenMigrated:value.seenMigrated===true,notes:cleanText(value.notes,5000,'Species notes'),...(photo?{photo}:{}),updatedAt:Number.isFinite(value.updatedAt)?value.updatedAt:0};
 }
 
 export function normalizeWildlifeOuting(value){
@@ -30,8 +30,6 @@ export function normalizeWildlifeSighting(value){
 
 export const activeOuting=(outings,guideId)=>[...outings.values()].filter(value=>value.guideId===guideId&&!value.endedAt).sort((a,b)=>b.startedAt.localeCompare(a.startedAt))[0]||null;
 export const guideOutings=(outings,guideId)=>[...outings.values()].filter(value=>value.guideId===guideId).sort((a,b)=>b.startedAt.localeCompare(a.startedAt));
-export const speciesSightings=(sightings,guideId,speciesId)=>[...sightings.values()].filter(value=>value.guideId===guideId&&value.speciesId===speciesId).sort((a,b)=>b.observedAt.localeCompare(a.observedAt));
-export function speciesStats(sightings,guideId,speciesId){const matches=speciesSightings(sightings,guideId,speciesId);return {count:matches.length,total:matches.reduce((sum,item)=>sum+item.count,0),first:matches.at(-1)?.observedAt||'',latest:matches[0]?.observedAt||''};}
 
 export function applyWildlifeRecords(trip,records){
  if(!trip.wildlife)return trip;let changed=false;

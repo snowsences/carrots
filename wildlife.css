@@ -18,9 +18,9 @@
  .wildlife-landing-pair .wildlife-category{min-height:0;border-radius:0!important;box-shadow:none!important}
  .wildlife-landing-pair .attraction-link,.wildlife-landing-pair .attraction-body{height:100%;min-height:0;aspect-ratio:auto}
 }
-/* Identification photos keep the whole subject visible, including tails and roots. */
-.wildlife-detail .photo-tile{height:auto}
-.wildlife-detail .photo-tile img{height:auto;max-height:65vh;object-fit:contain}
+/* Identification photos keep the whole subject visible and reserve their space while loading. */
+.wildlife-detail .photo-tile{height:min(75vw,65vh,600px)}
+.wildlife-detail .photo-tile img{width:100%;height:100%;max-height:none;object-fit:contain}
 .wildlife-mode-tabs{display:grid;grid-template-columns:repeat(3,1fr);margin:4px 0 20px;padding:4px}
 .wildlife-mode-tabs.modes-1{grid-template-columns:1fr;width:120px}
 .wildlife-mode-tabs a{color:var(--ink);text-align:center;text-decoration:none;border-radius:4px;padding:9px 8px;font-weight:600}
