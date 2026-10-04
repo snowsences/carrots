@@ -61,10 +61,10 @@ test('standalone wildlife field guides need no trip dates or attractions',()=>{
  assert.throws(()=>parseImport(JSON.stringify({format:'glauco-trip-file',version:5,trips:[field]})),/version 6/);
 });
 
-test('tracking views belong to guides, while dated trips stay guide-only',()=>{
+test('wildlife uses one guide view with inline seen filters',()=>{
  assert.deepEqual(wildlifeModes({}),['guide']);
- assert.deepEqual(wildlifeModes({guideType:'destination'}),['guide','seen','outings']);
- assert.deepEqual(wildlifeModes({guideType:'wildlife'}),['guide','seen','outings']);
+ assert.deepEqual(wildlifeModes({guideType:'destination'}),['guide']);
+ assert.deepEqual(wildlifeModes({guideType:'wildlife'}),['guide']);
 });
 
 test('main tabs have compatible defaults and support explicit guide choices',()=>{
