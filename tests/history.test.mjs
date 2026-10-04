@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {glossaryParts,historyTimeline} from '../guide.js';
+import {glossaryParts,historyTimeline,historyContext} from '../guide.js';
 import {parseImport,normalizeTrip,tripMeta,normalizeMeta,hydrateTrip} from '../model.js';
 
 const glossary=[{term:'Naga',definition:'A serpent.',aliases:['nagas']},{term:'Mount Meru / temple mountain',definition:'A sacred mountain.',aliases:['Mount Meru','temple mountain','temple mountains']}];
@@ -29,6 +29,10 @@ test('timeline includes current milestones and only earlier comparison targets',
  assert.equal(entries[0].label,'Approximate period');
  assert.deepEqual(historyTimeline(f,'missing'),[]);
  f.days[0].attractions[1].history=[];assert.deepEqual(historyTimeline(f,'current'),[]);
+});
+test('historical context keeps one milestone per eligible site',()=>{
+ const f=fixture();f.days[0].attractions[1].history.push(event(2011,'2011 CE'));
+ assert.deepEqual(historyContext(f,'current').map(e=>[e.attraction.id,e.year]),[['current',900],['earlier',967]]);
 });
 test('optional historical content and glossary aliases survive cloud reconstruction',()=>{
  const f=fixture();f.days[0].attractions[1].originality=['Replacement bricks are marked.'];

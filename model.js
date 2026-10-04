@@ -44,6 +44,11 @@ function normalizePhotos(value) {
   if (photos.some(p => !p.url)) fail('Photos must have a URL.');
   return photos;
 }
+function normalizeGlossaryPhoto(value, term) {
+  const p=object(value,`Glossary image for ${term}`),result={url:url(p.url,`Glossary image URL for ${term}`,true),thumbnailUrl:url(p.thumbnailUrl || p.url,`Glossary thumbnail URL for ${term}`,true),alt:text(p.alt,250,`Glossary image description for ${term}`)};
+  if(!result.url)fail('Glossary images must have a URL.');
+  return result;
+}
 function normalizeAreas(value) {
   const areas=list(value || [],20,'Wildlife areas').map(a=>({id:id(object(a,'Wildlife area').id,'Area ID'),name:text(a.name,120,'Area name',true),description:text(a.description,600,'Area description')}));
   if(new Set(areas.map(a=>a.id)).size!==areas.length)fail('Wildlife area IDs must be unique.');
@@ -136,7 +141,7 @@ export function normalizeTrip(value) {
   const destination=t.guideType==='destination';
   if (!destination && (!Number.isInteger(t.year) || t.year < 1900 || t.year > 2200)) fail('Trip year must be between 1900 and 2200.');
   const headerUrl=url(t.headerUrl, 'Header image', true);
-  const result = {id: id(t.id, 'Trip ID'), name: text(t.name, 180, destination?'Guide name':'Trip name', true), ...(destination?{guideType:'destination'}:{year:t.year,startDate:date(t.startDate, 'Start date', true),endDate:date(t.endDate, 'End date', true),...(headerUrl?{headerUrl}:{})}), coverUrl: url(t.coverUrl, 'Cover image', true), glossary:list(t.glossary || [], 60, 'Glossary').map(g => ({term:text(object(g, 'Glossary term').term, 80, 'Glossary term', true), definition:text(g.definition, 800, 'Glossary definition', true), aliases:list(g.aliases || [],8,'Glossary aliases').map(alias => text(alias,80,'Glossary alias',true))})), days: []};
+  const result = {id: id(t.id, 'Trip ID'), name: text(t.name, 180, destination?'Guide name':'Trip name', true), ...(destination?{guideType:'destination'}:{year:t.year,startDate:date(t.startDate, 'Start date', true),endDate:date(t.endDate, 'End date', true),...(headerUrl?{headerUrl}:{})}), coverUrl: url(t.coverUrl, 'Cover image', true), glossary:list(t.glossary || [], 60, 'Glossary').map(value => {const g=object(value, 'Glossary term'),term=text(g.term, 80, 'Glossary term', true);return {term,definition:text(g.definition, 800, 'Glossary definition', true),aliases:list(g.aliases || [],8,'Glossary aliases').map(alias => text(alias,80,'Glossary alias',true)),...(g.photo?{photo:normalizeGlossaryPhoto(g.photo,term)}:{})};}), days: []};
   const glossaryNames=new Set();for(const g of result.glossary)for(const name of [g.term,...g.aliases]){const key=name.toLocaleLowerCase('en');if(glossaryNames.has(key))fail('Glossary terms and aliases must be unique.');glossaryNames.add(key);}
   if (!destination && (result.endDate < result.startDate || Number(result.startDate.slice(0,4)) !== t.year)) fail('Trip dates must be in order, and the year must match the start date.');
   const dayIds = new Set(), attrIds = new Set(); let previous = '';
@@ -185,7 +190,7 @@ export function parseImport(raw) {
   return trips;
 }
 export const attractions = trip => trip.days.flatMap(day => day.attractions.map(attraction => ({day, attraction})));
-export function photoUrls(trip) { return [...new Set([trip.headerUrl,trip.coverUrl, ...[...attractions(trip).map(({attraction:a})=>a),...(trip.wildlife?.species || [])].flatMap(a=>a.photos.flatMap(p=>[p.url,p.thumbnailUrl]))].filter(Boolean))]; }
+export function photoUrls(trip) { return [...new Set([trip.headerUrl,trip.coverUrl,...(trip.glossary || []).flatMap(g=>g.photo?[g.photo.url,g.photo.thumbnailUrl]:[]), ...[...attractions(trip).map(({attraction:a})=>a),...(trip.wildlife?.species || [])].flatMap(a=>a.photos.flatMap(p=>[p.url,p.thumbnailUrl]))].filter(Boolean))]; }
 export function tripMeta(trip) {
   return {id:trip.id, name:trip.name, ...(trip.guideType==='destination'?{guideType:'destination'}:{year:trip.year,startDate:trip.startDate,endDate:trip.endDate,...(trip.headerUrl?{headerUrl:trip.headerUrl}:{})}), coverUrl:trip.coverUrl, glossary:trip.glossary || [], ...(trip.customs?{customs:trip.customs}:{}), ...(trip.wildlife?{wildlife:{browseByArea:trip.wildlife.browseByArea,areas:trip.wildlife.areas,speciesIds:trip.wildlife.species.map(s=>s.id)}}:{}), days:trip.days.map(d=>({id:d.id,date:d.date,title:d.title,attractionIds:d.attractions.map(a=>a.id)}))};
 }

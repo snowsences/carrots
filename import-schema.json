@@ -445,6 +445,17 @@
             "minLength": 1,
             "maxLength": 80
           }
+        },
+        "photo": {
+          "type": "object",
+          "description": "Optional public reference image that makes this term easier to recognise. Include it only when the image clearly illustrates the term.",
+          "properties": {
+            "url": { "$ref": "#/$defs/imageUrl" },
+            "thumbnailUrl": { "$ref": "#/$defs/imageUrl" },
+            "alt": { "type": "string", "maxLength": 250 }
+          },
+          "required": ["url"],
+          "additionalProperties": false
         }
       },
       "required": [

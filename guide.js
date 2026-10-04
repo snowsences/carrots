@@ -34,6 +34,16 @@ export function historyTimeline(trip, attractionId) {
   return events.sort((a,b) => a.year-b.year || Number(b.current)-Number(a.current));
 }
 
+// A compact cross-site view: one representative milestone for the current site
+// and each earlier site that its comparisons already introduce.
+export function historyContext(trip, attractionId) {
+  const bySite = new Map();
+  for (const event of historyTimeline(trip, attractionId)) {
+    if (!bySite.has(event.attraction.id)) bySite.set(event.attraction.id, event);
+  }
+  return [...bySite.values()].sort((a,b) => a.year-b.year || Number(b.current)-Number(a.current));
+}
+
 const ordinal = n => `${n}${[11,12,13].includes(n % 100) ? 'th' : ({1:'st',2:'nd',3:'rd'}[n % 10] || 'th')}`;
 export const yearLabel = year => year < 0 ? `${-year} BCE` : `${year} CE`;
 export const centuryLabel = year => year > 0 ? `${ordinal(Math.ceil(year/100))} century CE` : `${ordinal(Math.max(1,Math.ceil(-year/100)))} century BCE`;
