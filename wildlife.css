@@ -2,9 +2,9 @@
 .wildlife-landing{margin-top:8px}.wildlife-landing .attraction-link{min-height:260px}
 .wildlife-card .attraction-link{min-height:210px}.wildlife-card .attraction-body p{font-size:15px}
 .wildlife-search{margin-bottom:18px}.wildlife-search input{width:100%;padding-right:48px}
-.wildlife-areas,.wildlife-group-jump{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
-.wildlife-areas .active{background:var(--ink);color:var(--bg)}
-.wildlife-group-jump .button{font-size:15px;padding:7px 12px;min-height:38px}
+.wildlife-areas,.wildlife-more-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}.wildlife-areas .button,.wildlife-more-filters .button{font-size:15px;padding:7px 12px;min-height:38px}
+.wildlife-areas .active,.wildlife-more-filters .active{background:var(--ink);color:var(--bg)}.wildlife-areas .has-selection{text-decoration:underline;text-underline-offset:3px}
+.wildlife-more-filters{margin-top:-10px;padding:12px;background:var(--surface);border-radius:4px;box-shadow:var(--shadow)}.wildlife-filter-label{flex:0 0 100%;color:var(--muted);font-size:14px}.wildlife-filter-label:not(:first-child){margin-top:6px}
 .wildlife-group{margin-bottom:30px;scroll-margin-top:100px}.wildlife-group>h2{margin-bottom:14px}
 .wildlife-detail .identification li{margin-bottom:12px}.wildlife-detail .guide-text{margin-top:28px}
 .wildlife-detail .wildlife-status{margin:12px 0 20px}.wildlife-where section{margin-bottom:24px}
