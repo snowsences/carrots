@@ -21,12 +21,11 @@
 
 :root{--tabbar-height:73px}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.top-header{flex-wrap:wrap;gap:14px;padding-top:20px}.trip-selector{flex:0 0 100%;min-width:0}.trip-selector select{width:100%;min-height:52px;padding:12px 16px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font-size:17px;text-overflow:ellipsis;box-shadow:var(--shadow)}
-:root:not([data-theme=light]) .trip-selector select{border-color:transparent}
+.top-header{flex-wrap:wrap;gap:14px;padding-top:20px}.trip-selector{flex:0 0 100%;min-width:0}.trip-menu{width:100%;overflow:hidden;border:0;border-radius:8px;background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}.trip-menu-label{margin:0;padding:10px 16px 7px;color:var(--muted);font-size:13px;font-weight:500;letter-spacing:.08em;text-transform:uppercase}.trip-menu-label:not(:first-child){border-top:1px solid var(--line)}.trip-option{position:relative;display:grid;width:100%;gap:2px;padding:11px 16px;border:0;border-top:1px solid var(--line);background:transparent;color:inherit;text-align:left}.trip-option:hover{background:var(--soft)}.trip-option.selected{background:var(--soft)}.trip-option.selected::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--accent)}.trip-option-title{font:700 17px/1.3 Playfair,serif}.trip-option-type{color:var(--muted);font-size:14px;line-height:1.3}.trip-menu-empty{margin:0;padding:16px;color:var(--muted)}
 .button,.segmented button{font-size:16px}.button.small{font-size:14px}
 .customs-guide{max-width:800px;margin:auto}.customs-guide>.panel{margin-bottom:18px}.customs-guide>.panel h2{margin-top:0}.customs-guide>.panel p:last-child{margin-bottom:0}.country-tabs{display:flex;width:max-content;max-width:100%;overflow-x:auto;margin-bottom:24px}.country-tabs button{flex:none}.phrase-list{margin:0}.phrase{display:grid;grid-template-columns:minmax(110px,1fr) minmax(0,1.5fr);gap:16px;padding:16px 0;border-top:1px solid var(--line)}.phrase dt{font-weight:500}.phrase dd{margin:0;min-width:0}.native-phrase{display:block;font-size:22px;line-height:1.6;overflow-wrap:anywhere}.phrase-sound{display:block;color:var(--muted);font-size:17px}.today-shortcut{display:none}
 @media(max-width:680px){
- .top-header,.trips-view .top-header{padding:12px 16px 0;gap:0}.trip-selector{width:100%}.trip-selector select{min-height:50px;padding:11px 12px}.app,.trips-view .app{padding-top:20px;padding-bottom:calc(var(--tabbar-height) + 30px)}.has-today-shortcut .app{padding-bottom:calc(var(--tabbar-height) + 108px)}
+ .top-header,.trips-view .top-header{padding:12px 16px 0;gap:0}.trip-selector{width:100%}.trip-option{padding:10px 12px}.app,.trips-view .app{padding-top:20px;padding-bottom:calc(var(--tabbar-height) + 30px)}.has-today-shortcut .app{padding-bottom:calc(var(--tabbar-height) + 108px)}
  .nav-tab{padding-inline:8px}.today-shortcut{display:flex;position:fixed;z-index:29;bottom:var(--tabbar-height);left:12px;right:12px;min-height:64px;max-height:76px;padding:10px 16px;gap:12px;align-items:center;justify-content:space-between;background:var(--surface);color:var(--ink);box-shadow:var(--shadow);border:1px solid var(--line);border-radius:8px;text-decoration:none}.today-shortcut:hover{text-decoration:none;background:var(--raised)}.today-shortcut>span{min-width:0}.today-shortcut strong{display:block;font-size:16px}.today-shortcut span span{display:block;font-size:15px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  :root:not([data-theme=light]) .today-shortcut{border-color:transparent}.toast{bottom:calc(var(--tabbar-height) + 16px)}.has-today-shortcut .toast{bottom:calc(var(--tabbar-height) + 92px)}.phrase{grid-template-columns:1fr 1.2fr;gap:12px}.customs-guide>.panel{padding:20px}.country-tabs button{padding-inline:16px}
 }
@@ -55,10 +54,8 @@
 
 .nav-icon{fill:currentColor;stroke:none}.nav-icon .icon-selected{display:none}.nav-tab.active .nav-icon .icon-outline{display:none}.nav-tab.active .nav-icon .icon-selected{display:inline}
 
-/* Trip dropdown: custom arrow with 8px of space to its right. */
+/* Settings keeps every guide exposed for one-tap switching. */
 .trip-selector{position:relative}
-.trip-selector select{appearance:none;-webkit-appearance:none;padding-right:32px}
-.trip-selector::after{content:"";position:absolute;right:8px;top:50%;width:16px;height:16px;margin-top:-8px;background:var(--ink);pointer-events:none;-webkit-mask:url(chevron.svg) center/contain no-repeat;mask:url(chevron.svg) center/contain no-repeat}
 /* The icon-only bottom tab bar is consistent at every viewport width. Labels remain available to screen readers. */
 :root{--tabbar-height:59px}
 .main-nav{position:fixed;z-index:30;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(4,1fr);gap:0;padding:6px 16px calc(6px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
@@ -165,12 +162,11 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
  --accent:#fff;--accent-ink:#061c00;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.13);
  --shadow:0 1px 2px rgba(0,0,0,.32);--button-shadow:0 1px 3px rgba(0,0,0,.24)
 }
-:root[data-theme=light][data-trip-palette=peru] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-selector select,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
+:root[data-theme=light][data-trip-palette=peru] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-menu,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
  --surface:#fff;--raised:#edf2eb;--ink:#061c00;--muted:#52634e;--line:rgba(6,28,0,.16);
  --accent:#061c00;--accent-ink:#fff;--link:#214d18;--focus:#061c00;--soft:#e6eee3;
  color:var(--ink);background:#fff
 }
-:root[data-theme=light][data-trip-palette=peru] .trip-selector::after{background:#061c00}
 :root[data-theme=light][data-trip-palette=peru] .trip-hero-copy{color:#fff}
 :root[data-theme=light][data-trip-palette=peru] .photo-dialog{background:#000;color:#fff}
 :root[data-theme=light][data-trip-palette=italy]{
@@ -178,12 +174,11 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
  --accent:#fff;--accent-ink:#270f0d;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.13);
  --shadow:0 1px 2px rgba(0,0,0,.32);--button-shadow:0 1px 3px rgba(0,0,0,.24)
 }
-:root[data-theme=light][data-trip-palette=italy] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-selector select,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
+:root[data-theme=light][data-trip-palette=italy] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-menu,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
  --surface:#fff;--raised:#f2eceb;--ink:#270f0d;--muted:#66504e;--line:rgba(39,15,13,.16);
  --accent:#270f0d;--accent-ink:#fff;--link:#6b2e29;--focus:#270f0d;--soft:#efe4e3;
  color:var(--ink);background:#fff
 }
-:root[data-theme=light][data-trip-palette=italy] .trip-selector::after{background:#270f0d}
 :root[data-theme=light][data-trip-palette=italy] .trip-hero-copy{color:#fff}
 :root[data-theme=light][data-trip-palette=italy] .photo-dialog{background:#000;color:#fff}
 

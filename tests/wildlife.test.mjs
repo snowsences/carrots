@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {normalizeTrip,normalizeMeta,parseImport,tripMeta,hydrateTrip,photoUrls} from '../model.js';
 import {photoPlan} from '../offline.js';
-import {speciesMatches} from '../wildlife.js';
+import {speciesMatches,wildlifeModes} from '../wildlife.js';
 const species=()=>({id:'macaque',kind:'fauna',name:'Long-tailed macaque',scientificName:'Macaca fascicularis',group:'Mammals',aliases:['Crab-eating macaque'],identification:['A long tail.'],summary:['A social primate.'],where:[{areaId:'forest',likelihood:'Reported here.',note:'Look along the edge.',attractionIds:['temple']}],sources:[{title:'Research',url:'https://example.org/research'}],researchedAt:'2026-10-01',photos:[{url:'https://upload.wikimedia.org/full.jpg',thumbnailUrl:'https://upload.wikimedia.org/thumb.jpg'}]});
 const fixture=()=>({id:'trip',name:'Trip',year:2026,startDate:'2026-10-19',endDate:'2026-10-19',days:[{id:'day',date:'2026-10-19',title:'Temples',attractions:[{id:'temple',name:'Temple',summary:['A temple.']}]}],wildlife:{areas:[{id:'forest',name:'Forest'}],species:[species()]}});
 test('wildlife and existing itinerary survive import, metadata validation and remote hydration',()=>{
@@ -59,4 +59,10 @@ test('standalone wildlife field guides need no trip dates or attractions',()=>{
  const meta=normalizeMeta({...tripMeta(trip),revision:'rev',archiveRevision:'archive',archived:false});
  assert.deepEqual(hydrateTrip(meta,[],trip.wildlife.species),trip);
  assert.throws(()=>parseImport(JSON.stringify({format:'glauco-trip-file',version:5,trips:[field]})),/version 6/);
+});
+
+test('tracking views belong to guides, while dated trips stay guide-only',()=>{
+ assert.deepEqual(wildlifeModes({}),['guide']);
+ assert.deepEqual(wildlifeModes({guideType:'destination'}),['guide','seen','outings']);
+ assert.deepEqual(wildlifeModes({guideType:'wildlife'}),['guide','seen','outings']);
 });

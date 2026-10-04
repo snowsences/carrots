@@ -22,6 +22,7 @@
 .wildlife-detail .photo-tile{height:auto}
 .wildlife-detail .photo-tile img{height:auto;max-height:65vh;object-fit:contain}
 .wildlife-mode-tabs{display:grid;grid-template-columns:repeat(3,1fr);margin:4px 0 20px;padding:4px}
+.wildlife-mode-tabs.modes-1{grid-template-columns:1fr;width:120px}
 .wildlife-mode-tabs a{color:var(--ink);text-align:center;text-decoration:none;border-radius:4px;padding:9px 8px;font-weight:600}
 .wildlife-mode-tabs a.active{background:var(--ink);color:var(--bg)}
 .seen-badge{display:inline-flex;width:max-content;margin-top:8px;padding:4px 8px;border-radius:999px;background:var(--ink);color:var(--bg);font-size:12px;font-weight:600}

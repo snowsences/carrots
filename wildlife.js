@@ -3,6 +3,7 @@ import {activeOuting,guideOutings,speciesStats,wildlifeRecordId} from './wildlif
 const browsing=new Map();
 export const clearWildlifeBrowsing=()=>browsing.clear();
 export const wildlifeHref=(guideId,kind='',speciesId='')=>`#/wildlife/${guideId}${kind?`/${kind}`:''}${speciesId?`/${speciesId}`:''}`;
+export const wildlifeModes=trip=>trip.guideType==='destination'||trip.guideType==='wildlife'?['guide','seen','outings']:['guide'];
 const labels={fauna:'Fauna',flora:'Flora'};
 const preferredGroups=['Mammals','Birds','Reptiles','Amphibians','Fish','Butterflies','Dragonflies','Other insects','Other invertebrates','Trees','Palms','Shrubs','Climbers','Herbs','Ferns','Aquatic plants'];
 const when=value=>value?new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric'}).format(new Date(value)):'';
@@ -15,9 +16,11 @@ export function renderWildlifeView(entry,trip,route,ui) {
   const {h,link,back,image,main,empty,guideParagraph,external,showPhotos,applyBackground,tracker}=ui;
   const wildlife=trip.wildlife,all=wildlife?.species || [],records=tracker.records,outings=tracker.outings,sightings=tracker.sightings;
   if(!wildlife || !all.length){main.replaceChildren(empty('No wildlife guide here yet.','Import an updated guidebook file in Settings to add plants and animals.'));return;}
-  const root=wildlifeHref(entry.id),kind=route.day,region=wildlife.browseByArea?wildlife.areas.find(a=>`region-${a.id}`===kind):null;
+  const root=wildlifeHref(entry.id),modes=wildlifeModes(trip);let kind=route.day;
+  if(!modes.includes(kind)&&['seen','outings'].includes(kind)){history.replaceState(null,'',root);kind='';}
+  const region=wildlife.browseByArea?wildlife.areas.find(a=>`region-${a.id}`===kind):null;
   const stats=s=>speciesStats(sightings,entry.id,s.id),record=s=>records.get(wildlifeRecordId(entry.id,s.id)),speciesPhoto=s=>record(s)?.photo||s?.photos?.[0];
-  const tabs=current=>h('nav',{class:'segmented wildlife-mode-tabs','aria-label':'Wildlife views'},...[['guide','Guide',root],['seen','Seen',wildlifeHref(entry.id,'seen')],['outings','Outings',wildlifeHref(entry.id,'outings')]].map(([key,label,href])=>link(label,href,{class:key===current?'active':'','aria-current':key===current?'page':null})));
+  const tabs=current=>h('nav',{class:`segmented wildlife-mode-tabs modes-${modes.length}`,'aria-label':'Wildlife views'},...[['guide','Guide',root],['seen','Seen',wildlifeHref(entry.id,'seen')],['outings','Outings',wildlifeHref(entry.id,'outings')]].filter(([key])=>modes.includes(key)).map(([key,label,href])=>link(label,href,{class:key===current?'active':'','aria-current':key===current?'page':null})));
   const card=(s,href)=>{const seen=stats(s),photo=speciesPhoto(s);return h('article',{class:'attraction-card wildlife-card'},link([image(photo?.thumbnailUrl||photo?.url,'',photo?'':'placeholder'),h('div',{class:'attraction-body'},h('h2',{},s.name),h('p',{},h('i',{},s.scientificName)),seen.count?h('span',{class:'seen-badge'},`${seen.count} ${seen.count===1?'sighting':'sightings'}`):null)],href,{class:'attraction-link'}));};
   const finder=(items,placeholder,onPick,checked=new Set())=>{const results=h('div',{class:'outing-checklist'}),search=h('input',{type:'search',placeholder,'aria-label':placeholder});const update=()=>{const matches=items.filter(s=>speciesMatches(s,search.value)).sort((a,b)=>a.name.localeCompare(b.name));results.replaceChildren(...matches.map(s=>{const photo=speciesPhoto(s);return h('button',{type:'button',class:`outing-species-row ${checked.has(s.id)?'seen':''}`,'aria-pressed':checked.has(s.id),onclick:()=>onPick(s)},image(photo?.thumbnailUrl||photo?.url,s.name,photo?'':'placeholder'),h('span',{},h('strong',{},s.name),h('small',{},s.scientificName)),h('span',{class:'checkmark','aria-hidden':'true'},checked.has(s.id)?'✓':'+'));}));if(!matches.length)results.append(h('p',{class:'muted'},'No matching species.'));};search.addEventListener('input',update);update();return h('div',{class:'wildlife-finder'},h('div',{class:'search-wrap wildlife-search'},search),results);};
 
