@@ -8,6 +8,7 @@ const cleanPhoto=value=>{if(!value)return null;if(typeof value!=='object')throw 
 
 export const wildlifeRecordId=(guideId,speciesId)=>`${guideId}::${speciesId}`;
 export const legacyWildlifeNoteId=(guideId,speciesId)=>`${guideId}::${speciesId}::legacy-note`;
+export const UNIDENTIFIED_SPECIES_ID='journal-unidentified';
 
 export function normalizeWildlifeRecord(value){
  if(!value||typeof value!=='object')throw new Error('Wildlife record is invalid.');
@@ -25,6 +26,7 @@ export function normalizeWildlifeNote(value){
 }
 
 export const speciesNotes=(notes,guideId,speciesId)=>[...notes.values()].filter(value=>value.guideId===guideId&&value.speciesId===speciesId).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt||b.updatedAt-a.updatedAt);
+export const guideNotes=(notes,guideId)=>[...notes.values()].filter(value=>value.guideId===guideId).sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt||b.updatedAt-a.updatedAt);
 
 export function applyWildlifeRecords(trip,records){
  if(!trip.wildlife)return trip;let changed=false;

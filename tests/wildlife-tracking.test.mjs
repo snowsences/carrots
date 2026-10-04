@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeWildlifeRecord,normalizeWildlifeNote,wildlifeRecordId,legacyWildlifeNoteId,speciesNotes,applyWildlifeRecords} from '../wildlife-tracking.js';
+import {normalizeWildlifeRecord,normalizeWildlifeNote,wildlifeRecordId,legacyWildlifeNoteId,UNIDENTIFIED_SPECIES_ID,speciesNotes,guideNotes,applyWildlifeRecords} from '../wildlife-tracking.js';
 
 test('wildlife records keep notes and a personal default photo',()=>{
  const value=normalizeWildlifeRecord({id:'trip::fox',guideId:'trip',speciesId:'fox',seen:true,seenMigrated:true,notes:'Seen near the water.',photo:{url:'https://res.cloudinary.com/demo/fox.jpg',thumbnailUrl:'https://res.cloudinary.com/demo/fox-small.jpg',publicId:'glauco/trip/wildlife_fox'},updatedAt:12});
@@ -19,6 +19,8 @@ test('wildlife notes support dated text, optional photos, and newest-first sorti
  const newer=normalizeWildlifeNote({id:'note-2',guideId:'trip',speciesId:'fox',date:'2026-10-04',note:'',photo:{url:'https://res.cloudinary.com/demo/note.jpg',thumbnailUrl:'https://res.cloudinary.com/demo/note-small.jpg'},createdAt:2,updatedAt:2});
  const sorted=speciesNotes(new Map([[older.id,older],[newer.id,newer]]),'trip','fox');
  assert.deepEqual(sorted.map(value=>value.id),['note-2','note-1']);assert.equal(legacyWildlifeNoteId('trip','fox'),'trip::fox::legacy-note');
+ assert.deepEqual(guideNotes(new Map([[older.id,older],[newer.id,newer]]),'trip').map(value=>value.id),['note-2','note-1']);
+ assert.equal(UNIDENTIFIED_SPECIES_ID,'journal-unidentified');
 });
 
 test('invalid tracking data is rejected',()=>{
