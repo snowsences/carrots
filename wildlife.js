@@ -36,7 +36,8 @@ export function renderWildlifeView(entry,trip,route,ui) {
     const personal=record(s),seen=isSeen(s),photos=[...(personal?.photo?[personal.photo]:[]),...s.photos.filter(p=>p.url!==personal?.photo?.url)],article=h('article',{class:'article wildlife-detail'},back(title,sectionHref),h('h1',{},s.name),h('p',{class:'article-location'},h('i',{},s.scientificName)));
     if(photos.length)article.append(h('div',{class:'photo-gallery wildlife-photo-gallery','aria-label':'Species photos'},...photos.map((p,index)=>h('button',{class:'photo-tile',type:'button','aria-label':`View photo ${index+1} of ${s.name}`,onclick:()=>showPhotos(photos,index,s.name,{kind:'wildlife',species:s})},image(p.url,s.name)))));
     const journal=h('section',{class:'panel species-journal'});
-    journal.append(h('div',{class:'species-journal-heading'},h('div',{},h('h2',{},'Seen'),h('p',{class:'muted'},seen?'Marked as seen':'Not seen yet')),seen?h('button',{type:'button',class:'text-action species-unsee',onclick:()=>tracker.toggleSeen(s)},'Mark Not Seen'):h('button',{type:'button',class:'button primary',onclick:()=>tracker.toggleSeen(s)},'Mark seen')));
+    const seenLabel=seen?h('span',{class:'seen-status-tag'},h('span',{class:'seen-status-check','aria-hidden':'true'},'✓'),h('span',{},'Seen')):h('div',{},h('h2',{},'Seen'),h('p',{class:'muted'},'Not seen yet'));
+    journal.append(h('div',{class:'species-journal-heading'},seenLabel,seen?h('button',{type:'button',class:'text-action species-unsee',onclick:()=>tracker.toggleSeen(s)},'Mark Not Seen'):h('button',{type:'button',class:'button primary',onclick:()=>tracker.toggleSeen(s)},'Mark seen')));
 
     const noteList=speciesNotes(notes,entry.id,s.id),editorHost=h('div',{class:'wildlife-note-editor-host'}),timeline=h('div',{class:'wildlife-note-timeline'});
     const closeEditor=()=>editorHost.replaceChildren();
