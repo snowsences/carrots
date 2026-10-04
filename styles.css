@@ -202,3 +202,9 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 .history-context-stop.current .history-context-dot{background:var(--ink);box-shadow:0 0 0 1px var(--ink)}
 .history-context-stop.current strong{color:var(--ink)}
 @media(max-width:680px){.glossary-dialog-image{width:calc(100% + 40px);margin:-8px -20px 20px}.history-context-stop{width:124px}}
+
+/* Shared treatment for notes, location, and future form fields. */
+:root{--field-radius:4px;--field-border:color-mix(in srgb,var(--line),var(--surface) 50%);--field-shadow:0px 1px 3px 0px rgba(0,0,0,0.1);--field-padding:8px}
+:where(input:not([type=file]):not([type=checkbox]):not([type=radio]),select,textarea){font-family:Figtree,'Noto Sans Thai','Noto Sans Khmer',Arial,sans-serif;background:var(--surface);border:1px solid var(--field-border);border-radius:var(--field-radius);box-shadow:var(--field-shadow);padding:var(--field-padding)}
+.search-wrap input{border:0;border-radius:0;box-shadow:none;padding:0;background:none}
+.import-row select{background:var(--surface);border:1px solid var(--field-border);border-radius:var(--field-radius);box-shadow:var(--field-shadow);padding:var(--field-padding)}

@@ -185,9 +185,9 @@ export function normalizeTrip(value) {
 }
 export function parseImport(raw) {
   if (new TextEncoder().encode(raw).length > MAX_FILE) fail('Import files can be at most 12 MB.');
-  let payload; try { payload = JSON.parse(raw); } catch { fail('This is not valid JSON. Import a Glauco guidebook file prepared from the template.'); }
+  let payload; try { payload = JSON.parse(raw); } catch { fail('This is not valid JSON. Import a Carrots guidebook file prepared from the template.'); }
   rejectUnsafeKeys(payload); object(payload, 'Import file');
-  if (payload.format !== FORMAT || ![1,2,3,4,5,6].includes(payload.version)) fail('Use a Glauco guidebook file with format "glauco-trip-file" and version 1 through 6. Lambus PDFs need to be processed first.');
+  if (payload.format !== FORMAT || ![1,2,3,4,5,6].includes(payload.version)) fail('Use a Carrots guidebook file with format "glauco-trip-file" and version 1 through 6. Lambus PDFs need to be processed first.');
   const rawTrips=list(payload.trips, 30, 'Trips');
   if(payload.version<5&&rawTrips.some(t=>t?.guideType==='destination'))fail('Destination guides require file version 5.');
   if(payload.version<6&&rawTrips.some(t=>t?.guideType==='wildlife'))fail('Wildlife field guides require file version 6.');

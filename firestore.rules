@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isGlaucoMember() {
+    function isCarrotsMember() {
       return request.auth != null
         && request.auth.uid in [
           '4ct4jQf9cPhbzqiasFT56Mav7Ds1',
@@ -10,7 +10,7 @@ service cloud.firestore {
         ];
     }
     match /glauco/shared/{document=**} {
-      allow read, write: if isGlaucoMember();
+      allow read, write: if isCarrotsMember();
     }
   }
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://glauco.local/import-schema-v6",
-  "title": "Glauco guidebook file",
+  "title": "Carrots guidebook file",
   "type": "object",
   "required": [
     "format",
