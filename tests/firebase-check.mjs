@@ -11,14 +11,16 @@ const modules=new Map();
 async function load(file){if(modules.has(file))return modules.get(file);let mod;if(file.includes('/vendor/firebase/')){const values=file.endsWith('firebase-firestore.js')?firestore:file.endsWith('firebase-app.js')?{initializeApp:()=>({})}:{initializeAuth:()=>({}),indexedDBLocalPersistence:{},browserLocalPersistence:{},browserPopupRedirectResolver:{},GoogleAuthProvider:class{},onAuthStateChanged:()=>{},signInWithPopup:async()=>{},signOut:async()=>{}};mod=new vm.SyntheticModule(Object.keys(values),function(){for(const [key,value] of Object.entries(values))this.setExport(key,value);},{context,identifier:file});modules.set(file,mod);return mod;}mod=new vm.SourceTextModule(fs.readFileSync(file,'utf8'),{context,identifier:file});modules.set(file,mod);await mod.link((specifier,reference)=>load(new URL(specifier,'file://'+reference.identifier).pathname));return mod;}
 const module=await load(new URL('../firebase.js',import.meta.url).pathname);await module.evaluate();const cloud=module.namespace;
 const trip={id:'trip',name:'Trip',year:2026,startDate:'2026-10-19',endDate:'2026-10-19',days:[{id:'day',date:'2026-10-19',title:'Day',attractions:[{id:'site',name:'Site',summary:['Guide.']}]}]},entry={id:'trip',trip,meta:trip,revision:'old',archiveRevision:'archive',archived:true},key='glauco/shared/trips/trip';
-records.set(key,{...trip,revision:'old',archiveRevision:'archive',archived:false});await assert.rejects(cloud.deleteArchived(entry),/CONFLICT/);assert.equal(records.get(key).archived,false);
-records.set(key,{...trip,revision:'old',archiveRevision:'newer',archived:true});await assert.rejects(cloud.deleteArchived(entry),/CONFLICT/);
-records.set(key,{...trip,revision:'old',archiveRevision:'archive',archived:true});await assert.rejects(cloud.deleteArchived(entry,()=>true),/CANCELLED/);assert.equal(records.get(key).deleted,undefined);
-await cloud.deleteArchived(entry);assert.equal(records.get(key).deleted,true);assert.notEqual(records.get(key).revision,'old');
+records.set(key,{...trip,revision:'old',archiveRevision:'archive',archived:false});await assert.rejects(cloud.deleteGuidebook(entry),/CONFLICT/);assert.equal(records.get(key).archived,false);
+await cloud.deleteGuidebook({...entry,archived:false});assert.equal(records.get(key).deleted,true);await assert.rejects(cloud.saveImport(entry,'old'),/CONFLICT/);
+records.set(key,{...trip,revision:'updated',archiveRevision:'archive',archived:true});await assert.rejects(cloud.deleteGuidebook(entry),/CONFLICT/);
+records.set(key,{...trip,revision:'old',archiveRevision:'newer',archived:true});await assert.rejects(cloud.deleteGuidebook(entry),/CONFLICT/);
+records.set(key,{...trip,revision:'old',archiveRevision:'archive',archived:true});await assert.rejects(cloud.deleteGuidebook(entry,()=>true),/CANCELLED/);assert.equal(records.get(key).deleted,undefined);
+await cloud.deleteGuidebook(entry);assert.equal(records.get(key).deleted,true);assert.notEqual(records.get(key).revision,'old');
 await assert.rejects(cloud.saveImport(entry,'old'),/CONFLICT/);await assert.rejects(cloud.saveArchive(entry,'old','archive'),/CONFLICT/);
 await cloud.saveImport({...entry,revision:'reimported',archived:false},null);assert.equal(records.get(key).deleted,undefined);assert.equal(records.get(key).revision,'reimported');
 afterBatch=()=>records.set(key,{id:'trip',deleted:true,revision:'deleted-during-import'});await assert.rejects(cloud.saveImport({...entry,revision:'late-import'},'reimported'),/CONFLICT/);assert.equal(records.get(key).revision,'deleted-during-import');
-console.log('PASS actual Firebase adapter: active-trip deletion blocked, revision and archive conflicts checked, cancellation respected, archived deletion marker saved, stale imports/restores cannot resurrect deletion, deliberate re-import allowed, transaction guards concurrent deletion.');
+console.log('PASS actual Firebase adapter: active and archived guidebook deletion supported, content and archive conflicts checked, cancellation respected, archived deletion marker saved, stale imports/restores cannot resurrect deletion, deliberate re-import allowed, transaction guards concurrent deletion.');
 
 const largeTrip={...trip,wildlife:{areas:[{id:'forest',name:'Forest'}],species:Array.from({length:350},(_,i)=>({id:`species-${i}`,name:`Species ${i}`}))}};
 records.delete(key);batchSizes=[];

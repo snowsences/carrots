@@ -45,8 +45,8 @@ export async function saveImport(entry, expectedRevision, isCancelled=()=>false)
 export async function saveArchive(entry,expectedRevision,expectedArchiveRevision,isCancelled=()=>false) {
   await runTransaction(db,async tx=>{const s=await tx.get(tripRef(entry.id));if(!s.exists() || s.data().deleted || s.data().revision!==expectedRevision || s.data().archiveRevision!==expectedArchiveRevision)throw new Error('CONFLICT');if(isCancelled())throw new Error('CANCELLED');tx.update(tripRef(entry.id),{archived:entry.archived,archiveRevision:entry.archiveRevision,updatedAt:Date.now()});});
 }
-export async function deleteArchived(entry,isCancelled=()=>false) {
-  await runTransaction(db,async tx=>{const reference=tripRef(entry.id),s=await tx.get(reference);if(!s.exists()||s.data().deleted||!s.data().archived||s.data().revision!==entry.revision||s.data().archiveRevision!==entry.archiveRevision)throw new Error('CONFLICT');if(isCancelled())throw new Error('CANCELLED');tx.set(reference,{id:entry.id,deleted:true,revision:uid(),updatedAt:Date.now()});});
+export async function deleteGuidebook(entry,isCancelled=()=>false) {
+  await runTransaction(db,async tx=>{const reference=tripRef(entry.id),s=await tx.get(reference);if(!s.exists()||s.data().deleted||s.data().archived!==entry.archived||s.data().revision!==entry.revision||s.data().archiveRevision!==entry.archiveRevision)throw new Error('CONFLICT');if(isCancelled())throw new Error('CANCELLED');tx.set(reference,{id:entry.id,deleted:true,revision:uid(),updatedAt:Date.now()});});
 }
 export const remoteMeta=async id=>{const s=await getDoc(tripRef(id));return s.exists()?s.data():null;};
 export const setNetwork=online=>online?enableNetwork(db):disableNetwork(db);
