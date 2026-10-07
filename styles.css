@@ -183,6 +183,21 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 :root[data-theme=light][data-trip-palette=italy] .trip-hero-copy{color:#fff}
 :root[data-theme=light][data-trip-palette=italy] .photo-dialog{background:#000;color:#fff}
 
+:root[data-trip-palette=japan]{--bg:#06001c;--ink:#fff;--muted:#fff;--link:#fff}
+:root[data-trip-palette=japan] body.attraction-view{--bg:#06001c}
+:root[data-theme=light][data-trip-palette=japan]{
+ --bg:#06001c;--surface:#fff;--raised:#eeebf2;--ink:#fff;--muted:#c9c3d5;--line:rgba(255,255,255,.22);
+ --accent:#fff;--accent-ink:#06001c;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.13);
+ --shadow:0 1px 2px rgba(0,0,0,.32);--button-shadow:0 1px 3px rgba(0,0,0,.24)
+}
+:root[data-theme=light][data-trip-palette=japan] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-menu,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
+ --surface:#fff;--raised:#eeebf2;--ink:#06001c;--muted:#595064;--line:rgba(6,0,28,.16);
+ --accent:#06001c;--accent-ink:#fff;--link:#3d2468;--focus:#06001c;--soft:#e9e3ef;
+ color:var(--ink);background:#fff
+}
+:root[data-theme=light][data-trip-palette=japan] .trip-hero-copy{color:#fff}
+:root[data-theme=light][data-trip-palette=japan] .photo-dialog{background:#000;color:#fff}
+
 /* Visual glossary and the compact, earlier-sites-only historical context strip. */
 .glossary-term.has-image{display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;align-items:start}
 .glossary-visual{width:76px;height:76px;padding:0;border:0;border-radius:4px;overflow:hidden;background:var(--raised);box-shadow:var(--shadow)}

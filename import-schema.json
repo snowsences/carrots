@@ -467,8 +467,8 @@
           "type": "object",
           "description": "Optional public reference image that makes this term easier to recognise. Include it only when the image clearly illustrates the term.",
           "properties": {
-            "url": { "$ref": "#/$defs/imageUrl" },
-            "thumbnailUrl": { "$ref": "#/$defs/imageUrl" },
+            "url": { "$ref": "#/$defs/url" },
+            "thumbnailUrl": { "$ref": "#/$defs/url" },
             "alt": { "type": "string", "maxLength": 250 }
           },
           "required": ["url"],
