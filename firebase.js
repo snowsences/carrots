@@ -48,5 +48,9 @@ export async function saveArchive(entry,expectedRevision,expectedArchiveRevision
 export async function deleteGuidebook(entry,isCancelled=()=>false) {
   await runTransaction(db,async tx=>{const reference=tripRef(entry.id),s=await tx.get(reference);if(!s.exists()||s.data().deleted||s.data().archived!==entry.archived||s.data().revision!==entry.revision||s.data().archiveRevision!==entry.archiveRevision)throw new Error('CONFLICT');if(isCancelled())throw new Error('CANCELLED');tx.set(reference,{id:entry.id,deleted:true,revision:uid(),updatedAt:Date.now()});});
 }
+export async function restorePersonalData(value){
+ const writes=[...value.photoOverrides.map(item=>[doc(overridesRef(),item.id),item]),...value.wildlifeRecords.map(item=>[doc(wildlifeRef('wildlifeRecords'),item.id),item]),...value.wildlifeNotes.map(item=>[doc(wildlifeRef('wildlifeSightings'),item.id),item])];
+ for(let offset=0;offset<writes.length;offset+=200){const batch=writeBatch(db);for(const [reference,item] of writes.slice(offset,offset+200))batch.set(reference,item);await batch.commit();}
+}
 export const remoteMeta=async id=>{const s=await getDoc(tripRef(id));return s.exists()?s.data():null;};
 export const setNetwork=online=>online?enableNetwork(db):disableNetwork(db);

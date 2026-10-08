@@ -224,3 +224,6 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 :where(input:not([type=file]):not([type=checkbox]):not([type=radio]),select,textarea){font-family:Figtree,'Noto Sans Thai','Noto Sans Khmer',Arial,sans-serif;background:var(--surface);border:1px solid var(--field-border);border-radius:var(--field-radius);box-shadow:var(--field-shadow);padding:var(--field-padding)}
 .search-wrap input{border:0;border-radius:0;box-shadow:none;padding:0;background:none}
 .import-row select{background:var(--surface);border:1px solid var(--field-border);border-radius:var(--field-radius);box-shadow:var(--field-shadow);padding:var(--field-padding)}
+
+/* Personal-data backup */
+.personal-backup-actions{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin:18px 0 14px}.personal-backup-actions .file-picker{margin:0}.personal-backup-actions>*{flex:1 1 180px}.personal-backup-actions .button{width:100%}#personalBackupPreview{padding:12px;border-radius:4px;background:var(--soft)}
