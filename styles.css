@@ -227,3 +227,17 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 
 /* Personal-data backup */
 .personal-backup-actions{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin:18px 0 14px}.personal-backup-actions .file-picker{margin:0}.personal-backup-actions>*{flex:1 1 180px}.personal-backup-actions .button{width:100%}#personalBackupPreview{padding:12px;border-radius:4px;background:var(--soft)}
+
+/* Keep interactive UI below translucent iPhone status bars while allowing trip photography to remain full bleed. */
+#releaseBanner{position:sticky;z-index:40;top:calc(env(safe-area-inset-top,0px) + 8px);box-shadow:var(--shadow)}
+@supports(padding-top:env(safe-area-inset-top)){
+ body:not(.settings-view):not(.trip-detail-view):not(.games-route) .app{padding-top:calc(20px + env(safe-area-inset-top))}
+ body.settings-view .top-header{padding-top:calc(20px + env(safe-area-inset-top))}
+ body:not(.settings-view) .banner{margin-top:calc(12px + env(safe-area-inset-top))}
+}
+@media(max-width:680px){
+ @supports(padding-top:env(safe-area-inset-top)){
+  body.settings-view .top-header{padding-top:calc(12px + env(safe-area-inset-top))}
+  body:not(.settings-view) .banner{margin-top:calc(10px + env(safe-area-inset-top))}
+ }
+}
