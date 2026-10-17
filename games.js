@@ -43,9 +43,8 @@ export function renderGamesView(entry,trip,ui){
  const {h,image,main,empty}=ui,wildlife=trip.wildlife;
  if(!wildlife?.species?.length){main.replaceChildren(empty('No wildlife quiz yet.','This guidebook does not contain flora or fauna to learn.'));return;}
  const mode=selectedModes.get(entry.id)||'mixed',species=eligible(trip,mode);
- const shell=h('section',{class:'games-view'}),heading=h('div',{class:'games-heading'},h('h1',{},'Wildlife Quiz'),h('p',{class:'muted'},'Learn the plants and animals in this guide. Choices favor related species and useful lookalikes.'));
- const modes=h('div',{class:'segmented games-modes','aria-label':'Quiz category'},...[["mixed","Mixed"],["animals","Animals"],["plants","Plants"]].map(([value,label])=>h('button',{type:'button',class:value===mode?'active':'','aria-pressed':value===mode,onclick:()=>{selectedModes.set(entry.id,value);renderGamesView(entry,trip,ui);}},label)));
- const host=h('div',{class:'game-host'});shell.append(heading,modes,host);main.replaceChildren(shell);
+ const shell=h('section',{class:'games-view'}),modes=h('div',{class:'segmented games-modes','aria-label':'Quiz category'},...[["mixed","Mixed"],["animals","Animals"],["plants","Plants"]].map(([value,label])=>h('button',{type:'button',class:value===mode?'active':'','aria-pressed':value===mode,onclick:()=>{selectedModes.set(entry.id,value);renderGamesView(entry,trip,ui);}},label)));
+ const host=h('div',{class:'game-host'});shell.append(modes,host);main.replaceChildren(shell);
  if(species.length<2){host.replaceChildren(empty('Not enough photos for this quiz.','Add at least two photographed species in this category.'));return;}
  const session=gameSession(entry.id,mode,species);if(!session.current||!species.some(item=>item.id===session.current.id))nextSpecies(session,species);
  function draw(){
