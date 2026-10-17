@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {distractorScore,smartChoices} from '../games.js';
+import {distractorScore,smartChoices,wrongAnswerExplanation} from '../games.js';
 
 const species=(id,kind,group,areaIds,scientificName,identification)=>({id,name:id,kind,group,areaIds,scientificName,identification:[identification],summary:[],aliases:[],photos:[{url:`https://example.com/${id}.jpg`}]});
 const owl=species('barred-owl','fauna','Birds',['forest'],'Strix varia','Large brown owl with dark eyes and barred breast.');
@@ -21,4 +21,19 @@ test('smart choices stay within flora or fauna and favor useful lookalikes',()=>
  assert.ok(choices.some(item=>item.id===spotted.id));
  assert.ok(choices.every(item=>item.kind==='fauna'));
  assert.deepEqual(choices,smartChoices(owl,[owl,spotted,gull,deer,trillium],4,2));
+});
+
+test('wrong-answer explanation prefers an explicit lookalike distinction',()=>{
+ const correct={...owl,lookalikes:[{name:spotted.name,distinction:'Spotted Owls show pale spots rather than strong vertical barring.'}]};
+ const explanation=wrongAnswerExplanation(correct,spotted);
+ assert.equal(explanation.explicit,true);
+ assert.equal(explanation.selectedName,spotted.name);
+ assert.match(explanation.difference,/pale spots/);
+});
+
+test('wrong-answer explanation falls back to useful recognition clues',()=>{
+ const explanation=wrongAnswerExplanation(owl,gull);
+ assert.equal(explanation.explicit,false);
+ assert.match(explanation.correctClue,/dark eyes/);
+ assert.match(explanation.difference,/coastal gull/);
 });
