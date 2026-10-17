@@ -23,6 +23,18 @@ export function smartChoices(correct,pool,count=4,round=0){
  return [correct,...distractors].sort((a,b)=>hash(`${correct.id}:${round}:${a.id}`)-hash(`${correct.id}:${round}:${b.id}`));
 }
 
+const normalizedName=value=>String(value||'').toLocaleLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+const speciesNames=species=>[species?.name,species?.scientificName,...(species?.aliases||[])].map(normalizedName).filter(Boolean);
+const lookalikeFor=(correct,selected)=>{const names=speciesNames(selected);return (correct?.lookalikes||[]).find(item=>{const name=normalizedName(item?.name);return name&&names.some(candidate=>name===candidate||name.includes(candidate)||candidate.includes(name));});};
+const bestRecognition=(species,other)=>{const options=[...(species?.identification||[]),...(species?.summary||[])].filter(Boolean),otherTerms=speciesWords(other);return options.sort((left,right)=>{const score=value=>[...words(value)].filter(word=>!otherTerms.has(word)).length*20+Math.min(String(value).length,240);return score(right)-score(left);})[0]||'';};
+
+export function wrongAnswerExplanation(correct,selected){
+ const correctClue=bestRecognition(correct,selected);
+ if(!selected)return {correctClue,selectedName:'',difference:'',explicit:false};
+ const explicit=lookalikeFor(correct,selected),difference=explicit?.distinction||bestRecognition(selected,correct);
+ return {correctClue,selectedName:selected.name||'',difference,explicit:Boolean(explicit?.distinction)};
+}
+
 const photoOf=species=>species?.photos?.find(photo=>photo?.url);
 const randomSeed=()=>globalThis.crypto?.randomUUID?.()||`${Date.now()}:${Math.random()}`;
 const shuffle=(values,seed)=>values.slice().sort((a,b)=>hash(`${seed}:${a.id}`)-hash(`${seed}:${b.id}`));
@@ -56,7 +68,7 @@ export function renderGamesView(entry,trip,ui){
   for(const choice of choices){const correct=choice.id===current.id,selected=session.result?.choiceId===choice.id,classes=['game-choice'];if(answered&&correct)classes.push('correct');else if(answered&&selected)classes.push('incorrect');choiceList.append(h('button',{type:'button',class:classes.join(' '),disabled:answered,'aria-label':choice.name,onclick:()=>answer(choice.id)},h('span',{},choice.name)));}
   const content=h('div',{class:'game-content'},h('p',{class:'game-question'},current.kind==='flora'?'Which plant is this?':'Which animal is this?'),choiceList);
   if(!answered)content.append(h('button',{type:'button',class:'text-action game-unsure',onclick:()=>answer(null)},'I’m not sure'),stats);
-  else{const correct=session.result.correct,wildlifeKind=wildlife.browseByArea&&current.areaIds?.[0]?`region-${current.areaIds[0]}`:current.kind,wildlifeHref=`#/wildlife/${entry.id}/${wildlifeKind}/${current.id}`,feedback=h('div',{class:`game-feedback ${correct?'correct':'incorrect'}`,role:'status','aria-live':'polite'},h('h2',{},correct?'Correct':`This is ${current.name}`),current.scientificName?h('p',{class:'game-scientific'},h('i',{},current.scientificName)):null,current.identification?.[0]?h('p',{},current.identification[0]):null,h('div',{class:'game-feedback-actions'},h('a',{class:'button',href:wildlifeHref},'View in Wildlife'),h('button',{type:'button',class:'button primary',onclick:()=>{nextSpecies(session,species);draw();}},'Next question')));content.append(feedback,stats);queueMicrotask(()=>feedback.querySelector('button')?.focus());}
+  else{const correct=session.result.correct,selected=species.find(item=>item.id===session.result.choiceId),explanation=!correct?wrongAnswerExplanation(current,selected):null,wildlifeKind=wildlife.browseByArea&&current.areaIds?.[0]?`region-${current.areaIds[0]}`:current.kind,wildlifeHref=`#/wildlife/${entry.id}/${wildlifeKind}/${current.id}`,details=correct?(current.identification?.[0]?h('p',{},current.identification[0]):null):explanation&&(explanation.correctClue||explanation.difference)?h('div',{class:'game-explanation'},explanation.correctClue?h('section',{},h('h3',{},`Why this is ${current.name}`),h('p',{},explanation.correctClue)):null,explanation.difference?h('section',{},h('h3',{},explanation.explicit?'How they differ':`Why not ${explanation.selectedName}`),h('p',{},explanation.difference)):null):null,feedback=h('div',{class:`game-feedback ${correct?'correct':'incorrect'}`,role:'status','aria-live':'polite'},h('h2',{},correct?'Correct':`This is ${current.name}`),current.scientificName?h('p',{class:'game-scientific'},h('i',{},current.scientificName)):null,details,h('div',{class:'game-feedback-actions'},h('a',{class:'button',href:wildlifeHref},'View in Wildlife'),h('button',{type:'button',class:'button primary',onclick:()=>{nextSpecies(session,species);draw();}},'Next question')));content.append(feedback,stats);queueMicrotask(()=>feedback.querySelector('button')?.focus());}
   host.replaceChildren(h('article',{class:'panel game-card'},photoFrame,content));
  }
  function answer(choiceId){if(session.result)return;const correct=choiceId===session.current.id;session.answered+=1;if(correct){session.correct+=1;session.streak+=1;}else{session.streak=0;repeatLater(session,session.current.id);}session.result={choiceId,correct};draw();}
