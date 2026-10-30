@@ -6,11 +6,12 @@ const photo={url:'https://res.cloudinary.com/demo/image/upload/example.jpg',thum
 const override={id:'trip::site',tripId:'trip',attractionId:'site',photos:[photo],updatedAt:30};
 const record={id:'guide::bird',guideId:'guide',speciesId:'bird',seen:true,photo,updatedAt:20};
 const note={id:'note-1',guideId:'guide',speciesId:'bird',date:'2026-10-08',note:'Seen by the pond.',photo,createdAt:10,updatedAt:10};
+const hidden={id:'guide::place::site',guideId:'guide',dayId:'place',attractionId:'site',updatedAt:15};
 
 test('creates and parses a personal-data-only backup',()=>{
- const backup=createPersonalBackup({photoOverrides:[override],wildlifeRecords:[record],wildlifeNotes:[note]},'2026-10-08T20:00:00.000Z');
+ const backup=createPersonalBackup({photoOverrides:[override],wildlifeRecords:[record],wildlifeNotes:[note],hiddenAttractions:[hidden]},'2026-10-08T20:00:00.000Z');
  assert.equal(backup.format,'carrots-personal-data');
- assert.equal(personalBackupCount(backup.data),3);
+ assert.equal(personalBackupCount(backup.data),4);
  assert.deepEqual(parsePersonalBackup(JSON.stringify(backup)),backup);
  assert.equal('trips' in backup.data,false);
  assert.equal('downloads' in backup.data,false);
@@ -25,9 +26,17 @@ test('rejects guidebook JSON and malformed records',()=>{
 
 test('restores missing and newer records without overwriting newer current data',()=>{
  const backup=createPersonalBackup({photoOverrides:[override],wildlifeRecords:[record],wildlifeNotes:[note]});
- const merged=mergePersonalBackup(backup,{photoOverrides:new Map([[override.id,{...override,updatedAt:40}]]),wildlifeRecords:new Map(),wildlifeNotes:new Map([[note.id,{...note,updatedAt:10}]])});
+ const merged=mergePersonalBackup(backup,{photoOverrides:new Map([[override.id,{...override,updatedAt:40}]]),wildlifeRecords:new Map(),wildlifeNotes:new Map([[note.id,{...note,updatedAt:10}]]),hiddenAttractions:new Map()});
  assert.deepEqual(merged.photoOverrides,[]);
  assert.equal(merged.wildlifeRecords.length,1);
  assert.equal(merged.wildlifeRecords[0].id,record.id);
  assert.deepEqual(merged.wildlifeNotes,[]);
+ assert.equal(merged.hiddenAttractions.length,1);
+});
+
+test('imports version 1 backups with no hidden-attraction records',()=>{
+ const legacy={format:'carrots-personal-data',version:1,exportedAt:'2026-10-08T20:00:00.000Z',data:{photoOverrides:[],wildlifeRecords:[],wildlifeNotes:[]}};
+ const parsed=parsePersonalBackup(legacy);
+ assert.equal(parsed.version,2);
+ assert.deepEqual(parsed.data.hiddenAttractions,[]);
 });
