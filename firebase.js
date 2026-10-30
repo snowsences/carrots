@@ -17,6 +17,7 @@ export const authToken=()=>auth.currentUser?.getIdToken()||Promise.reject(new Er
 const tripsRef=()=>collection(db,'glauco','shared','trips');
 const overridesRef=()=>collection(db,'glauco','shared','photoOverrides');
 const wildlifeRef=kind=>collection(db,'glauco','shared',kind);
+const hiddenRef=()=>collection(db,'glauco','shared','hiddenAttractions');
 const tripRef=id=>doc(tripsRef(),id);
 export function listen(callback,error){return onSnapshot(tripsRef(),s=>callback(s.docs.map(d=>d.data())),error);}
 export function listenPhotoOverrides(callback,error){return onSnapshot(overridesRef(),s=>callback(s.docs.map(d=>d.data())),error);}
@@ -25,6 +26,9 @@ export async function deletePhotoOverride(id){const batch=writeBatch(db);batch.d
 export function listenWildlife(kind,callback,error){return onSnapshot(wildlifeRef(kind),s=>callback(s.docs.map(d=>d.data())),error);}
 export async function saveWildlife(kind,value){const batch=writeBatch(db);batch.set(doc(wildlifeRef(kind),value.id),value);await batch.commit();}
 export async function deleteWildlife(kind,id){const batch=writeBatch(db);batch.delete(doc(wildlifeRef(kind),id));await batch.commit();}
+export function listenHiddenAttractions(callback,error){return onSnapshot(hiddenRef(),s=>callback(s.docs.map(d=>d.data())),error);}
+export async function saveHiddenAttraction(value){const batch=writeBatch(db);batch.set(doc(hiddenRef(),value.id),value);await batch.commit();}
+export async function deleteHiddenAttraction(id){const batch=writeBatch(db);batch.delete(doc(hiddenRef(),id));await batch.commit();}
 export async function readRemote(meta) {const base=tripRef(meta.id);const [snap,wildlife]=await Promise.all([getDocs(collection(base,'versions',meta.revision,'attractions')),meta.wildlife?.speciesIds.length?getDocs(collection(base,'versions',meta.revision,'species')):Promise.resolve({docs:[]})]);return hydrateTrip(meta,snap.docs.map(d=>d.data()),wildlife.docs.map(d=>d.data()));}
 export async function saveImport(entry, expectedRevision, isCancelled=()=>false) {
   const reference=tripRef(entry.id), revision=entry.revision;
@@ -49,7 +53,7 @@ export async function deleteGuidebook(entry,isCancelled=()=>false) {
   await runTransaction(db,async tx=>{const reference=tripRef(entry.id),s=await tx.get(reference);if(!s.exists()||s.data().deleted||s.data().archived!==entry.archived||s.data().revision!==entry.revision||s.data().archiveRevision!==entry.archiveRevision)throw new Error('CONFLICT');if(isCancelled())throw new Error('CANCELLED');tx.set(reference,{id:entry.id,deleted:true,revision:uid(),updatedAt:Date.now()});});
 }
 export async function restorePersonalData(value){
- const writes=[...value.photoOverrides.map(item=>[doc(overridesRef(),item.id),item]),...value.wildlifeRecords.map(item=>[doc(wildlifeRef('wildlifeRecords'),item.id),item]),...value.wildlifeNotes.map(item=>[doc(wildlifeRef('wildlifeSightings'),item.id),item])];
+ const writes=[...value.photoOverrides.map(item=>[doc(overridesRef(),item.id),item]),...value.wildlifeRecords.map(item=>[doc(wildlifeRef('wildlifeRecords'),item.id),item]),...value.wildlifeNotes.map(item=>[doc(wildlifeRef('wildlifeSightings'),item.id),item]),...value.hiddenAttractions.map(item=>[doc(hiddenRef(),item.id),item])];
  for(let offset=0;offset<writes.length;offset+=200){const batch=writeBatch(db);for(const [reference,item] of writes.slice(offset,offset+200))batch.set(reference,item);await batch.commit();}
 }
 export const remoteMeta=async id=>{const s=await getDoc(tripRef(id));return s.exists()?s.data():null;};
