@@ -25,7 +25,7 @@ test('rejects guidebook JSON and malformed records',()=>{
 });
 
 test('restores missing and newer records without overwriting newer current data',()=>{
- const backup=createPersonalBackup({photoOverrides:[override],wildlifeRecords:[record],wildlifeNotes:[note]});
+ const backup=createPersonalBackup({photoOverrides:[override],wildlifeRecords:[record],wildlifeNotes:[note],hiddenAttractions:[hidden]});
  const merged=mergePersonalBackup(backup,{photoOverrides:new Map([[override.id,{...override,updatedAt:40}]]),wildlifeRecords:new Map(),wildlifeNotes:new Map([[note.id,{...note,updatedAt:10}]]),hiddenAttractions:new Map()});
  assert.deepEqual(merged.photoOverrides,[]);
  assert.equal(merged.wildlifeRecords.length,1);
