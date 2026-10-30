@@ -241,3 +241,17 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
   body:not(.settings-view) .banner{margin-top:calc(10px + env(safe-area-inset-top))}
  }
 }
+
+/* Shared destination-guide planning */
+.guide-entry-card{position:relative}
+.guide-visibility-action{position:absolute;z-index:3;top:12px;right:12px;min-height:32px;padding:6px 10px;border:0;border-radius:999px;background:rgba(0,0,0,.72);color:#fff;box-shadow:0 1px 3px rgba(0,0,0,.35);font:500 13px/1 Figtree,sans-serif;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.guide-visibility-action:hover{background:rgba(0,0,0,.86)}
+.guide-visibility-action:active{transform:translateY(1px)}
+.hidden-guide-entry .attraction-link{opacity:.72}
+.attraction-plan-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin:12px 0 4px}
+.hidden-status-tag{display:inline-flex;align-items:center;min-height:28px;padding:5px 9px;border-radius:999px;background:var(--raised);color:var(--muted);font-size:13px;line-height:1}
+.hidden-result{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.hidden-result .result{flex:1;min-width:0;margin-bottom:0}
+.hidden-result .button{flex:0 0 auto}
+.guide-hidden-button{white-space:nowrap}
+@media(max-width:520px){.guide-visibility-action{top:10px;right:10px}.hidden-result{align-items:stretch;flex-direction:column}.hidden-result .button{align-self:flex-end}}
