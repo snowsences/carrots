@@ -15,7 +15,7 @@ export function speciesMatches(species,query,areaId='') {
 }
 
 export function renderWildlifeView(entry,trip,route,ui) {
-  const {h,link,back,image,main,empty,guideParagraph,external,dateLabel,showPhotos,applyBackground,tracker}=ui;
+  const {h,link,back,image,main,empty,guideParagraph,external,googleImagesUrl,dateLabel,showPhotos,applyBackground,tracker}=ui;
   const wildlife=trip.wildlife,all=wildlife?.species || [],records=tracker.records,notes=tracker.notes,journalEnabled=wildlifeJournalEnabled(trip);
   if(!wildlife || !all.length){main.replaceChildren(empty('No wildlife guide here yet.','Import an updated guidebook file in Settings to add plants and animals.'));return;}
   const root=wildlifeHref(entry.id);let kind=route.day;
@@ -82,7 +82,7 @@ export function renderWildlifeView(entry,trip,route,ui) {
     journal.append(h('div',{class:'species-notes-heading'},h('h2',{},'My Notes'),h('button',{type:'button',class:'button',onclick:()=>openEditor()},'Add Note')),editorHost,timeline);
     article.append(journal);}
     article.append(h('section',{class:'guide-text identification'},h('h2',{},'How to recognise'),h('ul',{},...s.identification.map(p=>h('li',{},p)))),h('section',{class:'guide-text'},h('h2',{},'At a glance'),...s.summary.map(p=>guideParagraph(trip,p))));
-    const wikipedia=s.wikipediaUrl||s.sources.find(source=>/(^|\.)wikipedia\.org$/.test(new URL(source.url).hostname))?.url;if(wikipedia)article.append(h('div',{class:'sources'},external('Read on Wikipedia',wikipedia)));main.replaceChildren(article);applyBackground(article,photos[0]);return;
+    const wikipedia=s.wikipediaUrl||s.sources.find(source=>/(^|\.)wikipedia\.org$/.test(new URL(source.url).hostname))?.url,reading=h('div',{class:'sources'});if(wikipedia)reading.append(h('p',{},external('Read on Wikipedia ↗',wikipedia)));reading.append(h('p',{},external('Search Google Images ↗',googleImagesUrl(s.name,s.scientificName))));article.append(reading);main.replaceChildren(article);applyBackground(article,photos[0]);return;
   }
 
   const stateKey=`${entry.id}/${kind}`,saved=browsing.get(stateKey)||{query:'',seen:'all',groups:[],areas:[],moreOpen:false};browsing.set(stateKey,saved);saved.groups=Array.isArray(saved.groups)?saved.groups:[];saved.areas=Array.isArray(saved.areas)?saved.areas:[];
