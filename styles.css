@@ -114,7 +114,7 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 .trip-controls :is(.search-wrap,.view-tabs){background:var(--surface);border:0;border-radius:4px;box-shadow:var(--shadow)}
 :root[data-theme=light] .trip-controls :is(.search-wrap,.view-tabs){background:#fffaf5;box-shadow:0 1px 2px rgba(0,0,0,.25)}
 .trip-controls .view-tabs button{padding-inline:14px}
-#searchResults,.trip-days,.offline-note{position:relative;z-index:1}
+#searchResults,.trip-days,.place-days,.offline-note{position:relative;z-index:1}
 
 .trip-days{gap:16px}
 .trip-day-card{height:auto;padding:0;border:0;border-radius:4px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
