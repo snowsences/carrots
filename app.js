@@ -48,13 +48,23 @@ const googleImagesUrl=(...terms)=>`https://www.google.com/search?tbm=isch&q=${en
 function openGlossary(term){$('glossaryTitle').textContent=term.term;$('glossaryDefinition').textContent=term.definition;const picture=$('glossaryImage'),source=term.photo?.url||'';picture.classList.toggle('hidden',!source);if(source){picture.src=source;picture.alt=term.photo.alt||term.term;}else{picture.removeAttribute('src');picture.alt='';}showDialog($('glossaryDialog'));}
 function guideText(trip,value){return glossaryParts(value,trip.glossary).map(part=>part.term?h('button',{type:'button',class:'glossary-word','aria-haspopup':'dialog','aria-controls':'glossaryDialog',onclick:()=>openGlossary(part.term)},part.text):part.text);}
 function guideParagraph(trip,value,props={}){return h('p',props,guideText(trip,value));}
-function image(src,alt,cls=''){
+function image(src,alt,cls='',fallbackSrc=''){
+ src ||= fallbackSrc;
  if(!src)return h('div',{class:`placeholder ${cls}`},icon('photo'));
- const img=h('img',{src,alt,loading:'lazy',decoding:'async',class:`${cls}${cls?' ':''}img-loading`,'aria-busy':'true'});let settled=false;
- const ready=()=>{if(settled)return;settled=true;img.classList.remove('img-loading');img.classList.add('img-in');img.removeAttribute('aria-busy');};
- const failed=()=>{if(settled)return;settled=true;img.replaceWith(h('div',{class:`placeholder ${cls}`,'aria-label':`${alt || 'Image'} unavailable`},icon('photo')));};
- img.addEventListener('load',ready,{once:true});img.addEventListener('error',failed,{once:true});queueMicrotask(()=>{if(img.complete)(img.naturalWidth?ready:failed)();});return img;
+ const img=h('img',{alt,loading:'lazy',decoding:'async',class:`${cls}${cls?' ':''}img-loading`,'aria-busy':'true'});
+ const ready=()=>{
+  img.removeEventListener('error',failed);
+  img.classList.remove('img-loading');img.classList.add('img-in');img.removeAttribute('aria-busy');
+ };
+ const failed=()=>{
+  if(fallbackSrc&&fallbackSrc!==src){src=fallbackSrc;img.src=src;return;}
+  img.removeEventListener('error',failed);img.removeEventListener('load',ready);
+  img.replaceWith(h('div',{class:`placeholder ${cls}`,'aria-label':`${alt || 'Image'} unavailable`},icon('photo')));
+ };
+ img.addEventListener('load',ready,{once:true});img.addEventListener('error',failed);
+ img.src=src;return img;
 }
+const thumbnail=(photo,alt='')=>image(photo?.thumbnailUrl,alt,'',photo?.url);
 function hideNotice(){const n=$('notice');n.classList.add('leaving');setTimeout(()=>{if(n.classList.contains('leaving')){n.classList.add('hidden');n.classList.remove('leaving');}},220);}
 function notice(message){const n=$('notice');n.textContent=message;n.classList.remove('hidden','leaving');clearTimeout(noticeTimer);noticeTimer=setTimeout(hideNotice,6500);}
 function swapText(el,message){if(!el||el.textContent===message)return;el.textContent=message;el.classList.remove('swap');void el.offsetWidth;el.classList.add('swap');}
@@ -191,7 +201,7 @@ async function replaceWildlifePhoto(entry,species,file){if(busyPhoto)return;if(!
 function glossaryEntry(g){
  const copy=h('div',{},h('dt',{},g.term),h('dd',{},g.definition));
  if(!g.photo)return h('div',{class:'glossary-term'},copy);
- const visual=h('button',{type:'button',class:'glossary-visual','aria-label':`Open ${g.term} definition`,onclick:()=>openGlossary(g)},image(g.photo.thumbnailUrl||g.photo.url,g.photo.alt||g.term));
+ const visual=h('button',{type:'button',class:'glossary-visual','aria-label':`Open ${g.term} definition`,onclick:()=>openGlossary(g)},thumbnail(g.photo,g.photo.alt||g.term));
  return h('div',{class:'glossary-term has-image'},visual,copy);
 }
 function renderCustoms(entry,trip){
@@ -213,7 +223,7 @@ function renderTrip(entry,trip){
  const clear=h('button',{type:'button',class:'hidden','aria-label':'Clear search',onclick:()=>{search.value='';search.focus();updateSearch();}},'×');
  const days=h('div',{id:'days',class:`days ${destination?'place-days':'trip-days'}`},...trip.days.map(d=>{
   const heading=destination?link([h('div',{},h('h2',{},dayTitle(trip,d))),icon('arrow')],dayHref(entry.id,d.id),{class:'day-heading'}):link([h('p',{class:'day-meta'},`Day ${dayNumber(trip,d.id)} • ${dateLabel(d.date,{weekday:'long',month:'long',day:'numeric'})}`),h('h2',{},d.title)],dayHref(entry.id,d.id),{class:'day-heading'});
-  const pictured=d.attractions.filter(a=>a.photos.length&&(!destination||!isAttractionHidden(entry.id,d.id,a.id))),strip=pictured.length?h('div',{class:'thumb-viewport'},h('div',{class:'thumb-strip','aria-label':destination?`Entries in ${d.title}`:`Attractions on ${dateLabel(d.date)}`},...pictured.map(a=>link(image(a.photos[0].thumbnailUrl||a.photos[0].url,''),attrHref(entry.id,d.id,a.id),{class:'thumbnail','aria-label':a.name,title:a.name,...photoTarget(entry,d,a)})))):null;
+  const pictured=d.attractions.filter(a=>a.photos.length&&(!destination||!isAttractionHidden(entry.id,d.id,a.id))),strip=pictured.length?h('div',{class:'thumb-viewport'},h('div',{class:'thumb-strip','aria-label':destination?`Entries in ${d.title}`:`Attractions on ${dateLabel(d.date)}`},...pictured.map(a=>link(thumbnail(a.photos[0]),attrHref(entry.id,d.id,a.id),{class:'thumbnail','aria-label':a.name,title:a.name,...photoTarget(entry,d,a)})))):null;
   return h('article',{class:`day-card ${destination?'place-card':'trip-day-card'}`,onclick:event=>{if(!event.target.closest('a,button')&&!event.target.closest('.thumb-strip')&&!window.getSelection()?.toString())location.hash=dayHref(entry.id,d.id).slice(1);}},heading,strip);
  }));
  const results=h('div',{id:'searchResults',class:'hidden','aria-live':'polite'});
@@ -222,8 +232,8 @@ function renderTrip(entry,trip){
  main.replaceChildren(...[hero,controls,results,days].filter(Boolean));
  if(!navigator.onLine){const saved=state.downloads.get(entry.id),current=saved?.revision===entry.revision&&(saved.photoRevision||0)===overrideRevision(state.overrides,entry.id);main.insertBefore(h('p',{class:'offline-note'},current?'Reading your downloaded guide offline.':`Reading the saved version of this ${destination?'guide':'trip'}. Reconnect to check for updates.`),days);}
  const searchable=attractions(trip).filter(({day,attraction})=>!destination||!isAttractionHidden(entry.id,day.id,attraction.id)).map(item=>({...item,text:[item.attraction.name,item.attraction.location,item.attraction.neighborhood,...item.attraction.summary,...(item.attraction.notice||[]),...(item.attraction.comparisons||[]).flatMap(c=>c.paragraphs),...(item.attraction.originality||[]),...(item.attraction.history||[]).flatMap(event=>[event.label,event.title,event.text]),...item.attraction.facts.flatMap(f=>[f.label,f.value]),...item.attraction.sections.flatMap(s=>[s.heading,...s.paragraphs])].join(' ').toLocaleLowerCase()}));
- function updateSearch(){clear.classList.toggle('hidden',!search.value.length);const query=search.value.trim().toLocaleLowerCase();days.classList.toggle('hidden',Boolean(query));results.classList.toggle('hidden',!query);if(!query){results.replaceChildren();return;}const matches=searchable.filter(a=>a.text.includes(query));results.replaceChildren(h('p',{class:'small'},`${matches.length} ${destination?(matches.length===1?'entry':'entries'):(matches.length===1?'attraction':'attractions')} found`),...matches.map(({day,attraction:a})=>link([image(a.photos[0]?.thumbnailUrl,'',''),h('div',{},h('h3',{},a.name),h('p',{},destination?day.title:`${dateLabel(day.date)} · ${dayTitle(trip,day)}`))],attrHref(entry.id,day.id,a.id),{class:'result',...photoTarget(entry,day,a)})));}
- function showHidden(){search.value='';clear.classList.add('hidden');days.classList.add('hidden');results.classList.remove('hidden');results.replaceChildren(h('p',{class:'small'},`${hiddenEntries.length} hidden ${hiddenEntries.length===1?'entry':'entries'}`),...hiddenEntries.map(({day,attraction:a})=>h('div',{class:'hidden-result'},link([image(a.photos[0]?.thumbnailUrl,'',''),h('div',{},h('h3',{},a.name),h('p',{},day.title))],attrHref(entry.id,day.id,a.id),{class:'result',...photoTarget(entry,day,a)}),h('button',{type:'button',class:'button small',onclick:()=>setAttractionHidden(entry,day,a,false)},'Unhide'))));}
+ function updateSearch(){clear.classList.toggle('hidden',!search.value.length);const query=search.value.trim().toLocaleLowerCase();days.classList.toggle('hidden',Boolean(query));results.classList.toggle('hidden',!query);if(!query){results.replaceChildren();return;}const matches=searchable.filter(a=>a.text.includes(query));results.replaceChildren(h('p',{class:'small'},`${matches.length} ${destination?(matches.length===1?'entry':'entries'):(matches.length===1?'attraction':'attractions')} found`),...matches.map(({day,attraction:a})=>link([thumbnail(a.photos[0]),h('div',{},h('h3',{},a.name),h('p',{},destination?day.title:`${dateLabel(day.date)} · ${dayTitle(trip,day)}`))],attrHref(entry.id,day.id,a.id),{class:'result',...photoTarget(entry,day,a)})));}
+ function showHidden(){search.value='';clear.classList.add('hidden');days.classList.add('hidden');results.classList.remove('hidden');results.replaceChildren(h('p',{class:'small'},`${hiddenEntries.length} hidden ${hiddenEntries.length===1?'entry':'entries'}`),...hiddenEntries.map(({day,attraction:a})=>h('div',{class:'hidden-result'},link([thumbnail(a.photos[0]),h('div',{},h('h3',{},a.name),h('p',{},day.title))],attrHref(entry.id,day.id,a.id),{class:'result',...photoTarget(entry,day,a)}),h('button',{type:'button',class:'button small',onclick:()=>setAttractionHidden(entry,day,a,false)},'Unhide'))));}
  search.addEventListener('input',updateSearch);
 }
 function viewTabs(entry,trip,current,timeline=tripTimeline(trip,localDateKey())){if(trip.guideType==='destination'||!timeline.events.length)return null;return h('div',{class:'segmented view-tabs','aria-label':'Trip view'},...[['days','Days',tripHref(entry.id)],['timeline','Timeline',`#/timeline/${entry.id}`]].map(([key,label,href])=>h('button',{type:'button',class:key===current?'active':'','aria-pressed':key===current,onclick:()=>{if(key!==current)location.hash=href.slice(1);}},label)));}
@@ -330,7 +340,7 @@ function renderSettings(){
  const imports=h('section',{class:'panel'},h('h2',{},'Import a guidebook'),h('p',{},'Import a dated trip, a general destination guide, or a wildlife field guide for a local area.'),button('Import guidebook',openImport,true),link('Template & instructions','setup.html#import',{class:'setup-link'}));
  const personalData=h('section',{class:'panel'},h('h2',{},'Personal data backup'),h('p',{},'Export or restore seen status, wildlife journals, hidden attractions, unidentified sightings, and personal photo selections. Guidebooks and offline downloads are not included.'),button('Export / Import',openPersonalBackup,true));
  const manage=entry?h('section',{class:'panel'},h('h2',{},`Selected ${noun}`),h('p',{},displayTripName(entry.meta)),downloadStatus(entry),(entry.trip||state.downloads.get(entry.id)?.revision===entry.revision)?h('p',{class:'small guide-summary'},guideSummary(entry.trip||state.downloads.get(entry.id).trip)):null,h('div',{class:'toolbar'},button(entry.archived?`Restore ${noun}`:`Archive ${noun}`,()=>archive(entry)),h('button',{type:'button',class:'button danger',disabled:deletesRunning.has(entry.id),onclick:()=>deleteGuidebook(entry)},deletesRunning.has(entry.id)?'Deleting…':'Delete'),state.downloads.has(entry.id)?null:button('Download',()=>startDownload(entry.id)))):null;
- const sync=h('section',{class:'panel'},h('h2',{},'About Carrots'),h('p',{},'Your shared travel and wildlife guide.'),h('p',{class:'small'},'Version 3.7.6 · Built for the places you visit.'),link('Setup guide','setup.html'),h('div',{id:'conflicts'}));
+ const sync=h('section',{class:'panel'},h('h2',{},'About Carrots'),h('p',{},'Your shared travel and wildlife guide.'),h('p',{class:'small'},'Version 3.7.7 · Built for the places you visit.'),link('Setup guide','setup.html'),h('div',{id:'conflicts'}));
  main.replaceChildren(h('div',{class:'settings-grid'},appearance,account,manage,downloads,imports,personalData,sync));patchDownloads();patchConflicts();
 }
 function patchDownloads(){const list=$('downloadList');if(!list)return;list.replaceChildren();const existing=new Set();for(const d of [...state.downloads.values()].sort((a,b)=>a.name.localeCompare(b.name))){existing.add(d.id);const e=state.entries.get(d.id),current=e&&e.revision===d.revision&&(d.photoRevision||0)===guideAssetRevision(d.id),partial=d.partial&&current;list.append(h('div',{class:'download-row',id:`download-${d.id}`},h('div',{},h('h3',{},displayTripName(d)),h('p',{},`${sizeLabel(d.bytes)} · ${d.partial?`${d.imageCount} of ${d.photoTotal} photos`:`${d.imageCount} images`} · Saved ${dateLabel(new Date(d.downloadedAt).toISOString().slice(0,10))}`),partial?h('p',{class:'status warning'},'Partly saved. Continue when your connection is better.'):null,e&&!current?h('p',{class:'status warning'},'A newer guide or replacement photo is available'):null),h('div',{class:'toolbar'},partial?button('Continue',()=>startDownload(d.id,true),true):e?button('Update',()=>startDownload(d.id,true)):null,button('Remove',()=>removeDownload(d.id)))));}
@@ -399,7 +409,7 @@ try{applyTheme(localStorage.getItem('glauco-theme')||'dark');}catch{applyTheme('
 try{localStorage.removeItem('glauco-style');}catch{}
 window.addEventListener('online',()=>{status('Reconnecting…');if(state.user){cloud.setNetwork(true).then(()=>{flush();flushWildlife();flushHidden();}).catch(()=>status('Sync unavailable'));}checkRelease();});window.addEventListener('offline',()=>{status('Offline · saved guidebooks');if(state.user)cloud.setNetwork(false).catch(()=>{});});
 let installPrompt;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;let dismissed=false;try{dismissed=localStorage.getItem('glauco-install-dismissed')==='1';}catch{}if(!dismissed)$('installBanner').classList.remove('hidden');});$('installApp').onclick=async()=>{if(!installPrompt)return;await installPrompt.prompt();installPrompt=null;$('installBanner').classList.add('hidden');};$('dismissInstall').onclick=()=>{$('installBanner').classList.add('hidden');try{localStorage.setItem('glauco-install-dismissed','1');}catch{}};
-let registration,newRelease=false;const RELEASE='3.7.6';
+let registration,newRelease=false;const RELEASE='3.7.7';
 const showRelease=()=>{newRelease=true;$('releaseBanner').classList.remove('hidden');};
 async function checkRelease(){
  if(!navigator.onLine)return;
