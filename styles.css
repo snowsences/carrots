@@ -158,6 +158,10 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 :root[data-trip-palette=italy]{--bg:#270f0d;--ink:#fff;--muted:#fff;--link:#fff}
 :root[data-trip-palette=italy] body.attraction-view{--bg:#270f0d}
 :root[data-trip-palette=cambodia] .trip-hero-image{object-position:left center}
+:root[data-trip-palette=uzbekistan] .trip-hero-image{object-position:right 40%}
+:root[data-trip-palette=uzbekistan] body.trip-detail-view::before{background-size:max(100vw,640px) auto;background-position:100% min(0px,128px - 20vw)}
+:root[data-theme=light][data-trip-palette=uzbekistan],
+:root[data-theme=light][data-trip-palette=uzbekistan] body.attraction-view{--bg:#f0e3d0}
 :root[data-theme=light][data-trip-palette=peru]{
  --bg:#061c00;--surface:#fff;--raised:#edf2eb;--ink:#fff;--muted:#c4d0c1;--line:rgba(255,255,255,.22);
  --accent:#fff;--accent-ink:#061c00;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.13);
