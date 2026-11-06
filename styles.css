@@ -229,6 +229,21 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 :root[data-theme=light][data-trip-palette=china-vietnam] .trip-hero-copy{color:#fff}
 :root[data-theme=light][data-trip-palette=china-vietnam] .photo-dialog{background:#000;color:#fff}
 
+/* Petra foreground shadows set the guide's background and header fade. */
+:root[data-trip-palette=italy-egypt-jordan]{
+ --petra-shadow:#1f1715;--bg:var(--petra-shadow);--surface:#2a211e;--raised:#372a25;--muted:#cbb8b1;--soft:#332722
+}
+:root[data-trip-palette=italy-egypt-jordan] body.attraction-view{--bg:var(--petra-shadow)}
+:root[data-trip-palette=italy-egypt-jordan] .trip-hero-image{object-position:right 60%}
+:root[data-trip-palette=italy-egypt-jordan] .trip-hero::after{
+ background:linear-gradient(to top,var(--bg),color-mix(in srgb,var(--bg) 68%,transparent) 22%,transparent 72%)
+}
+@media(max-width:680px){
+ :root[data-trip-palette=italy-egypt-jordan] body.trip-detail-view::before{
+  background-size:max(100vw,569px) auto;background-position:right min(0px,192px - 33.75vw)
+ }
+}
+
 /* Visual glossary and the compact, earlier-sites-only historical context strip. */
 .glossary-term.has-image{display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;align-items:start}
 .glossary-visual{width:76px;height:76px;padding:0;border:0;border-radius:4px;overflow:hidden;background:var(--raised);box-shadow:var(--shadow)}
