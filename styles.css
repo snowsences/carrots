@@ -202,6 +202,21 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 :root[data-theme=light][data-trip-palette=japan] .trip-hero-copy{color:#fff}
 :root[data-theme=light][data-trip-palette=japan] .photo-dialog{background:#000;color:#fff}
 
+:root[data-trip-palette=china-vietnam]{--bg:#2e1f2b;--ink:#fff;--muted:#fff;--link:#fff}
+:root[data-trip-palette=china-vietnam] body.attraction-view{--bg:#2e1f2b}
+:root[data-theme=light][data-trip-palette=china-vietnam]{
+ --bg:#2e1f2b;--surface:#fff;--raised:#f1ecef;--ink:#fff;--muted:#d5c7d1;--line:rgba(255,255,255,.22);
+ --accent:#fff;--accent-ink:#2e1f2b;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.13);
+ --shadow:0 1px 2px rgba(0,0,0,.32);--button-shadow:0 1px 3px rgba(0,0,0,.24)
+}
+:root[data-theme=light][data-trip-palette=china-vietnam] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-menu,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
+ --surface:#fff;--raised:#f1ecef;--ink:#2e1f2b;--muted:#685765;--line:rgba(46,31,43,.16);
+ --accent:#2e1f2b;--accent-ink:#fff;--link:#6a3d61;--focus:#2e1f2b;--soft:#eee5eb;
+ color:var(--ink);background:#fff
+}
+:root[data-theme=light][data-trip-palette=china-vietnam] .trip-hero-copy{color:#fff}
+:root[data-theme=light][data-trip-palette=china-vietnam] .photo-dialog{background:#000;color:#fff}
+
 /* Visual glossary and the compact, earlier-sites-only historical context strip. */
 .glossary-term.has-image{display:grid;grid-template-columns:76px minmax(0,1fr);gap:14px;align-items:start}
 .glossary-visual{width:76px;height:76px;padding:0;border:0;border-radius:4px;overflow:hidden;background:var(--raised);box-shadow:var(--shadow)}
