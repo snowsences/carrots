@@ -257,6 +257,22 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 :root[data-theme=light][data-trip-palette=gujarat-rajasthan] .trip-hero-copy{color:#fff}
 :root[data-theme=light][data-trip-palette=gujarat-rajasthan] .photo-dialog{background:#000;color:#fff}
 
+:root[data-trip-palette=kerala-tamil-nadu]{--bg:#000d1f;--ink:#fff;--muted:#d6e4f2;--link:#fff}
+:root[data-trip-palette=kerala-tamil-nadu] body.attraction-view{--bg:#000d1f}
+:root[data-trip-palette=kerala-tamil-nadu] .trip-hero-image{object-position:center 52%}
+:root[data-theme=light][data-trip-palette=kerala-tamil-nadu]{
+ --bg:#014590;--surface:#fff;--raised:#edf3f9;--ink:#fff;--muted:#d9e8f7;--line:rgba(255,255,255,.26);
+ --accent:#fff;--accent-ink:#014590;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.15);
+ --shadow:0 1px 2px rgba(0,0,0,.32);--button-shadow:0 1px 3px rgba(0,0,0,.24)
+}
+:root[data-theme=light][data-trip-palette=kerala-tamil-nadu] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-menu,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
+ --surface:#fff;--raised:#edf3f9;--ink:#01366f;--muted:#526b84;--line:rgba(1,69,144,.17);
+ --accent:#014590;--accent-ink:#fff;--link:#075aa9;--focus:#014590;--soft:#e6f0fa;
+ color:var(--ink);background:#fff
+}
+:root[data-theme=light][data-trip-palette=kerala-tamil-nadu] .trip-hero-copy{color:#fff}
+:root[data-theme=light][data-trip-palette=kerala-tamil-nadu] .photo-dialog{background:#000;color:#fff}
+
 /* Petra foreground shadows set the guide's background and header fade. */
 :root[data-trip-palette=italy-egypt-jordan]{
  --petra-shadow:#1f1715;--bg:var(--petra-shadow);--surface:#2a211e;--raised:#372a25;--muted:#cbb8b1;--soft:#332722
