@@ -156,6 +156,18 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 :root[data-trip-palette=java-bali]{--java-bali-hero-height:clamp(320px,100vw,400px)}
 :root:not([data-theme=light])[data-trip-palette=java-bali]{--bg:#132110;--ink:#fff;--muted:#fff;--link:#fff}
 :root:not([data-theme=light])[data-trip-palette=java-bali] body.attraction-view{--bg:#132110}
+:root[data-theme=light][data-trip-palette=java-bali]{
+ --bg:#1f3b1d;--surface:#fff;--raised:#edf3ec;--ink:#fff;--muted:#d8e4d6;--line:rgba(255,255,255,.24);
+ --accent:#fff;--accent-ink:#1f3b1d;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.14);
+ --shadow:0 1px 2px rgba(0,0,0,.32);--button-shadow:0 1px 3px rgba(0,0,0,.24)
+}
+:root[data-theme=light][data-trip-palette=java-bali] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-menu,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
+ --surface:#fff;--raised:#edf3ec;--ink:#1f3b1d;--muted:#53664f;--line:rgba(31,59,29,.16);
+ --accent:#1f3b1d;--accent-ink:#fff;--link:#315f2e;--focus:#1f3b1d;--soft:#e8f0e6;
+ color:var(--ink);background:#fff
+}
+:root[data-theme=light][data-trip-palette=java-bali] .trip-hero-copy{color:#fff}
+:root[data-theme=light][data-trip-palette=java-bali] .photo-dialog{background:#000;color:#fff}
 :root[data-trip-palette=java-bali] :is(.trip-hero,.trip-hero-image){height:var(--java-bali-hero-height)}
 :root[data-trip-palette=java-bali] .trip-hero::after{height:var(--java-bali-hero-height);background:linear-gradient(to top,var(--bg),transparent 72%)}
 :root[data-trip-palette=java-bali] .trip-hero-image{max-height:none;object-position:center 18%}
@@ -228,6 +240,22 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 }
 :root[data-theme=light][data-trip-palette=china-vietnam] .trip-hero-copy{color:#fff}
 :root[data-theme=light][data-trip-palette=china-vietnam] .photo-dialog{background:#000;color:#fff}
+
+:root[data-trip-palette=gujarat-rajasthan]{--bg:#681a31;--ink:#fff;--muted:#f2dfe5;--link:#fff}
+:root[data-trip-palette=gujarat-rajasthan] body.attraction-view{--bg:#681a31}
+:root[data-trip-palette=gujarat-rajasthan] .trip-hero-image{filter:brightness(.9);object-position:center 48%}
+:root[data-theme=light][data-trip-palette=gujarat-rajasthan]{
+ --bg:#ea486c;--surface:#fff;--raised:#f8edf0;--ink:#fff;--muted:#fff;--line:rgba(255,255,255,.28);
+ --accent:#fff;--accent-ink:#64152a;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.17);
+ --shadow:0 1px 2px rgba(0,0,0,.32);--button-shadow:0 1px 3px rgba(0,0,0,.24)
+}
+:root[data-theme=light][data-trip-palette=gujarat-rajasthan] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-menu,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
+ --surface:#fff;--raised:#f8edf0;--ink:#64152a;--muted:#77545e;--line:rgba(100,21,42,.16);
+ --accent:#64152a;--accent-ink:#fff;--link:#a31f43;--focus:#64152a;--soft:#f7e5ea;
+ color:var(--ink);background:#fff
+}
+:root[data-theme=light][data-trip-palette=gujarat-rajasthan] .trip-hero-copy{color:#fff}
+:root[data-theme=light][data-trip-palette=gujarat-rajasthan] .photo-dialog{background:#000;color:#fff}
 
 /* Petra foreground shadows set the guide's background and header fade. */
 :root[data-trip-palette=italy-egypt-jordan]{
