@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {eligibleSpecies,recordReview,scheduleRetry,selectQuizPhoto,smartChoices,matchesSpeciesAnswer,adaptiveLevel} from '../games.js';
+const a={id:'a',kind:'fauna',name:'Owl',scientificName:'Strix a',group:'Birds',photos:[{url:'a'},{url:'b'}]},b={...a,id:'b',name:'Gull',scientificName:'Larus b'},plant={...a,id:'p',kind:'flora',name:'Tree',scientificName:'Pinus p'};
+test('mixed pools never yield a single answer',()=>{assert.equal(eligibleSpecies({wildlife:{species:[a,plant]}},'mixed').length,0);assert.equal(eligibleSpecies({wildlife:{species:[a,b,plant]}},'mixed').length,2);assert.equal(smartChoices(a,[a,b,plant]).length,2)});
+test('retry reposition and spaced review',()=>{assert.deepEqual(scheduleRetry(['a','b','c','d','e'],'a'),['b','c','d','a','e']);const p=recordReview({},true,100);assert.equal(p.due,86400100);assert.equal(recordReview(p,true,200,{retry:true}).stage,1);assert.equal(adaptiveLevel({stage:4}),'advanced')});
+test('rotate photos and accept scientific names',()=>{assert.equal(selectQuizPhoto(a,{photos:{a:2,b:0}}).url,'b');assert.ok(matchesSpeciesAnswer(a,'STRIX A'))});
