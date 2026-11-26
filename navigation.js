@@ -15,3 +15,9 @@ export function todayDay(entry,today=localDateKey()) {return ['destination','wil
 
 export function dayNumber(trip,dayId) {return trip.days.findIndex(day=>day.id===dayId)+1;}
 export function dayTitle(trip,day) {return trip.guideType==='destination'?day.title:`Day ${dayNumber(trip,day.id)}: ${day.title}`;}
+
+export function groupGuides(entries,metaFor=entry=>entry.meta,nameFor=entry=>metaFor(entry)?.name||''){
+ const buckets=new Map();
+ for(const entry of entries){const meta=metaFor(entry)||{},dated=!['destination','wildlife'].includes(meta.guideType)&&/^\d{4}-\d{2}-\d{2}$/.test(meta.startDate||''),label=dated?meta.startDate.slice(0,4):'Guides';if(!buckets.has(label))buckets.set(label,[]);buckets.get(label).push(entry);}
+ return [...buckets].sort(([a],[b])=>a==='Guides'?-1:b==='Guides'?1:a.localeCompare(b)).map(([label,items])=>({label,items:items.sort((a,b)=>(label==='Guides'?0:String(metaFor(a)?.startDate||'').localeCompare(String(metaFor(b)?.startDate||'')))||nameFor(a).localeCompare(nameFor(b))||String(a.id||'').localeCompare(String(b.id||'')))}));
+}
