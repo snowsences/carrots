@@ -26,6 +26,7 @@ export async function savePhotoOverride(value,base){const ref=doc(overridesRef()
 export async function deletePhotoOverride(id){const batch=writeBatch(db);batch.delete(doc(overridesRef(),id));await batch.commit();}
 export function listenWildlife(kind,callback,error){return onSnapshot(wildlifeRef(kind),s=>callback(s.docs.map(d=>d.data())),error);}
 export async function saveWildlife(kind,value,base,fields){const ref=doc(wildlifeRef(kind),value.id);return runTransaction(db,async tx=>{const s=await tx.get(ref),remote=s.exists()?s.data():null;if(base===undefined&&remote&&!sameValue(remote,value))throw Error('PERSONAL_CONFLICT: older queued change needs review.');const next=reconcilePersonal(base||null,value,remote,fields);if(!sameValue(next,remote))tx.set(ref,next);return next;});}
+export async function readWildlife(kind,id){const s=await getDoc(doc(wildlifeRef(kind),id));return s.exists()?s.data():null;}
 export async function deleteWildlife(kind,id,base){const ref=doc(wildlifeRef(kind),id);return runTransaction(db,async tx=>{const s=await tx.get(ref);if(!s.exists())return;if(!sameValue(base,s.data()))throw Error('PERSONAL_CONFLICT: entry changed before deletion.');tx.delete(ref);});}
 export function listenHiddenAttractions(callback,error){return onSnapshot(hiddenRef(),s=>callback(s.docs.map(d=>d.data())),error);}
 export async function saveHiddenAttraction(value){const batch=writeBatch(db);batch.set(doc(hiddenRef(),value.id),value);await batch.commit();}
