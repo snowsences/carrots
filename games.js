@@ -42,10 +42,20 @@ export function distractorScore(correct,candidate){
  return score;
 }
 
+const CHOICE_ALGORITHM_VERSION=2;
+const sameGroup=(a,b)=>Boolean(a.group&&b.group&&normalizedName(a.group)===normalizedName(b.group));
 export function smartChoices(correct,pool,count=4,round=0,options={}){
- const {level='intermediate',confusions={}}=options,rank=c=>{const base=distractorScore(correct,c);if(!Number.isFinite(base))return -Infinity;const explicit=lookalikeFor(correct,c)||lookalikeFor(c,correct),personal=Math.min(200,(confusions[taxonKey(c)]||0)*32),noise=hash(correct.id+':'+round+':'+c.id)/4294967296;
- return level==='beginner'?(explicit?40:0)+personal*.3-Math.abs(base-70)*.45+noise*65:base+personal+noise*(level==='advanced'?22:85)};
- const result=[correct],ranked=pool.filter(c=>Number.isFinite(distractorScore(correct,c))).sort((a,b)=>rank(b)-rank(a));for(const c of ranked){if(result.length>=count)break;if(!result.some(x=>x.id===c.id||sameName(x,c)))result.push(c)}
+ const {level='intermediate',confusions={}}=options;
+ // Taxonomic group is a hard priority, not a bonus that randomization or difficulty can erase.
+ // Fall back to other groups only when there are too few distinct same-group candidates.
+ const candidates=pool.map(c=>{
+  const base=distractorScore(correct,c);if(!Number.isFinite(base))return null;
+  const explicit=Boolean(lookalikeFor(correct,c)||lookalikeFor(c,correct)),personal=Math.min(200,(confusions[taxonKey(c)]||0)*32),noise=hash(correct.id+':'+round+':'+c.id)/4294967296;
+  const tier=sameGroup(correct,c)?0:explicit?1:2;
+  const score=level==='beginner'?base*.65+personal*.3+noise*65:base+personal+noise*(level==='advanced'?18:45);
+  return {candidate:c,tier,score};
+ }).filter(Boolean).sort((a,b)=>a.tier-b.tier||b.score-a.score||a.candidate.id.localeCompare(b.candidate.id));
+ const result=[correct];for(const {candidate:c} of candidates){if(result.length>=count)break;if(!result.some(x=>x.id===c.id||sameName(x,c)))result.push(c)}
  return result.sort((a,b)=>hash(correct.id+':'+round+':'+a.id)-hash(correct.id+':'+round+':'+b.id));
 }
 
@@ -98,7 +108,7 @@ export function renderGamesView(entry,trip,ui){
  const session=gameSession(entry.id,mode,species,entry.revision,setting);if(!species.some(item=>item.id===session.currentId))nextSpecies(session,species,setting);
  function draw(){
   const current=species.find(item=>item.id===session.currentId),profile=profileFor(current),level=session.level||'intermediate',answered=Boolean(session.result);let photo=current.photos.find(p=>p.url===session.photoUrl&&!failedPhotos.has(p.url))||selectQuizPhoto(current,profile,session.seed+':'+session.round,failedPhotos);if(!photo){renderGamesView(entry,trip,ui);return;}session.photoUrl=photo.url;
-  let choices=session.choiceIds?.map(id=>species.find(s=>s.id===id)).filter(Boolean)||[];if(choices.length<2||!choices.some(s=>s.id===current.id)){choices=smartChoices(current,species,4,session.seed+':'+session.round,{level,confusions:profile.confusions});session.choiceIds=choices.map(s=>s.id);persistGames();}
+  let choices=session.choiceIds?.map(id=>species.find(s=>s.id===id)).filter(Boolean)||[];if(choices.length<2||!choices.some(s=>s.id===current.id)||(!answered&&session.choiceAlgorithmVersion!==CHOICE_ALGORITHM_VERSION)){choices=smartChoices(current,species,4,session.seed+':'+session.round,{level,confusions:profile.confusions});session.choiceIds=choices.map(s=>s.id);session.choiceAlgorithmVersion=CHOICE_ALGORITHM_VERSION;persistGames();}
   const stats=h('div',{class:'game-stats'},h('span',{},h('strong',{},session.correct),h('small',{},'Correct')),h('span',{},h('strong',{},session.answered),h('small',{},'Answered')),h('span',{},h('strong',{},session.streak),h('small',{},'Streak')));
   const picture=image(photo.thumbnailUrl||photo.url,'Wildlife quiz photograph','',photo.url),photoFrame=h('div',{class:'game-photo'},picture);
   if(picture.tagName==='IMG')picture.addEventListener('error',()=>{if(picture.src!==photo.url&&picture.getAttribute('src')!==photo.url)return;setTimeout(()=>{if(!host.isConnected||!photoFrame.isConnected||session.currentId!==current.id)return;failedPhotos.add(photo.url);if(session.result)return;const remaining=selectQuizPhoto(current,profile,session.seed,failedPhotos);if(remaining){session.photoUrl=remaining.url;persistGames();draw()}else{photoFrame.replaceChildren(h('div',{class:'game-photo-unavailable'},h('p',{},'No available photograph for this question.'),h('button',{class:'button',type:'button',onclick:()=>{failedPhotos.delete(photo.url);draw()}},'Retry'),h('button',{class:'button',type:'button',onclick:()=>{session.currentId=null;persistGames();renderGamesView(entry,trip,ui)}},'Skip without scoring')));choiceList.querySelectorAll('button').forEach(b=>b.disabled=true);photoUnavailable=true;session.photoUnavailable=true;}},0);});
