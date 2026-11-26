@@ -353,3 +353,19 @@ h1,h2,h3{font-family:Playfair,Georgia,serif;font-weight:700;font-optical-sizing:
 
 /* Indent Settings guide names and subtitles 20px relative to group headings. */
 .trip-option{padding-left:36px}
+
+:root[data-trip-palette=sichuan-yunnan]{--bg:#0e2a36;--ink:#fff;--muted:#fff;--link:#fff}
+:root[data-trip-palette=sichuan-yunnan] body.attraction-view{--bg:#0e2a36}
+:root[data-theme=light][data-trip-palette=sichuan-yunnan]{
+ --bg:#0e2a36;--surface:#fff;--raised:#edf2f4;--ink:#fff;--muted:#c8dce3;--line:rgba(255,255,255,.22);
+ --accent:#fff;--accent-ink:#0e2a36;--link:#fff;--focus:#fff;--soft:rgba(255,255,255,.13);
+ --shadow:0 1px 2px rgba(0,0,0,.32);--button-shadow:0 1px 3px rgba(0,0,0,.24)
+}
+:root[data-theme=light][data-trip-palette=sichuan-yunnan] :is(.trip-card,.panel,.day-card,.empty,.facts,.result,.offline-note,.progress-wrap,.banner,dialog:not(.photo-dialog),.search-wrap,.segmented,.trip-menu,.today-shortcut,.toast,.notice-checklist,.originality-section,.photo-tile){
+ --surface:#fff;--raised:#edf2f4;--ink:#0e2a36;--muted:#526a73;--line:rgba(14,42,54,.16);
+ --accent:#0e2a36;--accent-ink:#fff;--link:#23566b;--focus:#0e2a36;--soft:#e5edf0;
+ color:var(--ink);background:#fff
+}
+:root[data-theme=light][data-trip-palette=sichuan-yunnan] .trip-hero-copy{color:#fff}
+:root[data-theme=light][data-trip-palette=sichuan-yunnan] .photo-dialog{background:#000;color:#fff}
+
