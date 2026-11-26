@@ -30,8 +30,8 @@
 }
 @media(max-width:680px) and (prefers-reduced-motion:no-preference){
  .main-nav,.today-shortcut{transition:transform .25s cubic-bezier(.2,0,0,1)}
- .chrome-hidden .main-nav{transform:translateY(100%)}
- .chrome-hidden .today-shortcut{transform:translateY(var(--tabbar-height))}
+ .chrome-hidden:not(.settings-view) .main-nav{transform:translateY(100%)}
+ .chrome-hidden:not(.settings-view) .today-shortcut{transform:translateY(var(--tabbar-height))}
 }
 
 /* ---- staggered list entry (after navigation only) ---- */

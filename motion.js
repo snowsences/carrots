@@ -124,6 +124,7 @@ export function initTabBar() {
     requestAnimationFrame(() => {
       queued = false;
       const y = Math.max(0, scrollY), dy = y - last, atEnd = innerHeight + y >= document.documentElement.scrollHeight - 8;
+      if (document.body.classList.contains('settings-view')) { showChrome(); last = y; return; }
       if (y < 64 || atEnd || dy < -6) showChrome(); else if (dy > 8) document.body.classList.add('chrome-hidden');
       if (Math.abs(dy) >= 6) last = y;
     });
