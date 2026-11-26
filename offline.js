@@ -1,5 +1,5 @@
 import {bytes,uid} from './model.js';
-import {all,put,remove} from './storage.js';
+import {all,get,put,remove} from './storage.js';
 import {localDateKey} from './navigation.js';
 const PREFIX='glauco-trip-', IMAGE_LIMIT=8*1024*1024, TRIP_LIMIT=300*1024*1024;
 const fatal=message=>Object.assign(new Error(message),{fatal:true});
@@ -11,7 +11,7 @@ export function photoPlan(trip,today=localDateKey()) {
   const ordered=trip.guideType==='destination'?days:[...days.filter(d=>d.date>=today),...days.filter(d=>d.date<today)];
   const seen=new Set(),plan=[];
   const add=(url,day)=>{if(url&&!seen.has(url)){seen.add(url);plan.push({url,day});}};
-  add(trip.headerUrl,0);add(trip.coverUrl,0);
+  add(trip.headerUrl,0);add(trip.coverUrl,0);for(const g of trip.glossary||[]){add(g.photo?.thumbnailUrl,0);add(g.photo?.url,0);}
   for(const day of ordered){const number=trip.days.indexOf(day)+1,photos=day.attractions.flatMap(a=>a.photos);for(const p of photos)add(p.thumbnailUrl,number);for(const p of photos)add(p.url,number);}
   const wildlife=trip.wildlife?.species || [];
   for(const s of wildlife)for(const p of s.photos)add(p.thumbnailUrl,0);
@@ -49,10 +49,10 @@ async function fetchImage(url,signal,weak) {
 }
 // A download that loses its connection after some photos keeps them and is saved as partial, so it can continue later.
 export async function downloadTrip(entry,progress,signal,{resume=null,today=localDateKey(),photoRevision=0}={}) {
-  const plan=photoPlan(entry.trip,today),weak=weakConnection();
+  const plan=photoPlan(entry.trip,today),weak=weakConnection(),checkpoint=await get('downloadJobs',entry.id);if(checkpoint?.revision===entry.revision&&(checkpoint.photoRevision||0)===photoRevision)resume=checkpoint;else if(checkpoint){await caches.delete(checkpoint.cacheName);await remove('downloadJobs',entry.id);}
   const reuse=Boolean(resume?.cacheName&&resume.revision===entry.revision&&(resume.photoRevision||0)===photoRevision&&await caches.has(resume.cacheName));
   const cacheName=reuse?resume.cacheName:`${PREFIX}${entry.id}-${uid()}`;
-  const cache=await caches.open(cacheName);let imageBytes=0,saved=0,interrupted=false;
+  const cache=await caches.open(cacheName);let imageBytes=0,saved=0,interrupted=false;await put('downloadJobs',{id:entry.id,revision:entry.revision,photoRevision,cacheName});
   try {
     for(let i=0;i<plan.length;i++) {
       signal.throwIfAborted();progress({completed:i,total:plan.length,bytes:imageBytes,day:plan[i].day,weak});
@@ -68,15 +68,15 @@ export async function downloadTrip(entry,progress,signal,{resume=null,today=loca
     }
     signal.throwIfAborted();
     const previous=(await all('downloads')).find(d=>d.id===entry.id);
-    const download={id:entry.id,name:entry.meta.name,revision:entry.revision,photoRevision,cacheName,bytes:imageBytes+bytes(entry.trip),imageBytes,imageCount:saved,photoTotal:plan.length,partial:interrupted,downloadedAt:Date.now(),trip:entry.trip};
-    await put('downloads',download);
+    const download={id:entry.id,name:entry.meta.name,revision:entry.revision,photoRevision,photoPlanVersion:2,cacheName,bytes:imageBytes+bytes(entry.trip),imageBytes,imageCount:saved,photoTotal:plan.length,partial:interrupted,downloadedAt:Date.now(),trip:entry.trip};
+    await put('downloads',download);await remove('downloadJobs',entry.id);
     if(previous?.cacheName&&previous.cacheName!==cacheName)await caches.delete(previous.cacheName);
     progress({completed:saved,total:plan.length,bytes:download.bytes,done:true,partial:interrupted});
     return download;
-  }catch(error){if(!reuse)await caches.delete(cacheName);throw error;}
+  }catch(error){if(signal.aborted||error.fatal){const previous=await get('downloads',entry.id);if(previous?.cacheName!==cacheName)await caches.delete(cacheName);await remove('downloadJobs',entry.id);}throw error;}
 }
-export async function deleteDownload(id) {const item=(await all('downloads')).find(d=>d.id===id);if(item)await caches.delete(item.cacheName);await remove('downloads',id);}
-export async function removeOrphans() {const used=new Set((await all('downloads')).map(d=>d.cacheName));for(const key of await caches.keys())if(key.startsWith(PREFIX)&&!used.has(key))await caches.delete(key);}
+export async function deleteDownload(id) {const item=await get('downloads',id),job=await get('downloadJobs',id);if(item)await caches.delete(item.cacheName);if(job)await caches.delete(job.cacheName);await remove('downloads',id);await remove('downloadJobs',id);}
+export async function removeOrphans() {const used=new Set([...(await all('downloads')),...(await all('downloadJobs'))].map(d=>d.cacheName));for(const key of await caches.keys())if(key.startsWith(PREFIX)&&!used.has(key))await caches.delete(key);}
 
 // ---- storage view ----
 async function cacheBytes(name) {const cache=await caches.open(name);let total=0;for(const request of await cache.keys()){const response=await cache.match(request);total+=Number(response?.headers.get('content-length'))||0;}return total;}
@@ -98,7 +98,7 @@ export async function storageReport(downloads) {
 export async function freeUpSpace(downloads,archivedIds) {
   let freed=0;
   for(const d of downloads)if(archivedIds.has(d.id)){freed+=d.bytes;await deleteDownload(d.id);}
-  const used=new Set((await all('downloads')).map(d=>d.cacheName));
+  const used=new Set([...(await all('downloads')),...(await all('downloadJobs'))].map(d=>d.cacheName));
   for(const key of await caches.keys())if(key.startsWith(PREFIX)&&!used.has(key)){freed+=await cacheBytes(key);await caches.delete(key);}
   return freed;
 }

@@ -57,7 +57,7 @@ function normalizeAreas(value) {
 export function normalizeSpecies(value) {
   const s=object(value,'Species');
   if(!['flora','fauna'].includes(s.kind))fail('Species kind must be flora or fauna.');
-  const result={id:id(s.id,'Species ID'),kind:s.kind,name:text(s.name,180,'Species name',true),scientificName:text(s.scientificName,180,'Scientific name',true),group:text(s.group,80,'Species group',true),aliases:list(s.aliases || [],12,'Species aliases').map(a=>text(a,180,'Species alias',true)),status:text(s.status,250,'Regional status'),
+  const result={id:id(s.id,'Species ID'),kind:s.kind,name:text(s.name,180,'Species name',true),scientificName:text(s.scientificName,180,'Scientific name',true),group:text(s.group,80,'Species group',true),...(s.family?{family:text(s.family,120,'Taxonomic family')}:{ }),aliases:list(s.aliases || [],12,'Species aliases').map(a=>text(a,180,'Species alias',true)),status:text(s.status,250,'Regional status'),
     identification:list(s.identification,8,'Identification clues').map(p=>text(p,700,'Identification clue',true)),
     lookalikes:list(s.lookalikes || [],6,'Lookalikes').map(a=>({name:text(object(a,'Lookalike').name,180,'Lookalike name',true),distinction:text(a.distinction,1200,'Lookalike distinction',true)})),
     summary:list(s.summary,6,'Species summary').map(p=>text(p,2500,'Species paragraph',true)),
